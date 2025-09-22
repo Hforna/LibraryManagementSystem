@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioLivre - Biblioteca Digital Gratuita</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Container principal da aplicação -->
+    <div class="container">
+        <!-- Cabeçalho com login e busca -->
+        <div class="header">
+            <!-- Seção de login/usuário no topo -->
+            <div class="header-top">
+                <div class="user-section">
+                    <!-- Informações do usuário logado (oculto inicialmente) -->
+                    <div id="userInfo" class="user-info hidden">
+                        <span id="userName">👋 Olá, Usuário!</span>
+                        <button class="btn-logout" onclick="logout()">Sair</button>
+                    </div>
+                    <!-- Botão de login - redireciona para tela separada -->
+                    <a href="login.html" id="loginBtn" class="btn-login">🔑 Entrar</a>
+                </div>
+            </div>
+            
+            <!-- Título e descrição principal -->
+            <h1>📚 BiblioLivre</h1>
+            <p>Sua biblioteca digital gratuita para todos</p>
+            
+            <!-- Barra de pesquisa -->
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="Pesquise por título, autor ou categoria..." id="searchInput">
+                <button class="search-btn" onclick="searchBooks()">🔍</button>
+            </div>
+        </div>
+
+        <!-- Menu de navegação por abas -->
+        <div class="nav-tabs">
+            <button class="tab active" onclick="showTab('home')">📚 Início</button>
+            <button class="tab" onclick="showTab('categories')">📂 Categorias</button>
+            <button class="tab" onclick="showTab('upload')">⬆️ Contribuir</button>
+            <button class="tab" onclick="showTab('favorites')">❤️ Favoritos</button>
+            <button class="tab" onclick="showTab('reading')">👁️ Lendo Agora</button>
+            <button class="tab" id="profileTab" onclick="showTab('profile')" style="display: none;">👤 Perfil</button>
+        </div>
+
+        <!-- Container principal do conteúdo -->
+        <div class="content-section">
+            <!-- Aba Inicial - Lista de livros e estatísticas -->
+            <div id="home" class="tab-content active">
+                <!-- Estatísticas da biblioteca -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalBooks">1,247</div>
+                        <div class="stat-label">Leituras Realizadas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeUsers">3,456</div>
+                        <div class="stat-label">Usuários Ativos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="categoriesCount">24</div>
+                        <div class="stat-label">Categorias</div>
+                    </div>
+                </div>
+
+                <h2>📖 Livros em Destaque</h2>
+                <!-- Grid de livros será preenchido via JavaScript -->
+                <div class="books-grid" id="booksGrid"></div>
+            </div>
+
+            <!-- Aba Categorias - Navegação por categorias -->
+            <div id="categories" class="tab-content">
+                <h2>📂 Explorar por Categorias</h2>
+                <!-- Grid de categorias será preenchido via JavaScript -->
+                <div class="categories-grid" id="categoriesGrid"></div>
+            </div>
+
+            <!-- Aba Upload - Formulário para enviar livros -->
+            <div id="upload" class="tab-content">
+                <h2>⬆️ Contribua com a Comunidade</h2>
+                <p style="text-align: center; margin-bottom: 30px; color: #666;">
+                    Ajude a expandir nossa biblioteca compartilhando livros de domínio público
+                </p>
+                
+                <!-- Verificação de login para upload -->
+                <div id="uploadLoginRequired" class="login-required" style="display: none;">
+                    <div class="login-prompt">
+                        <h3>🔐 Login Necessário</h3>
+                        <p>Para contribuir com livros, você precisa estar logado.</p>
+                        <a href="login.html" class="btn-primary">Fazer Login</a>
+                    </div>
+                </div>
+                
+                <div class="form-container" id="uploadForm">
+                    <div class="form-group">
+                        <label for="bookTitle">Título do Livro:</label>
+                        <input type="text" id="bookTitle" placeholder="Digite o título do livro">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookAuthor">Autor:</label>
+                        <input type="text" id="bookAuthor" placeholder="Nome do autor">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookCategory">Categoria:</label>
+                        <select id="bookCategory">
+                            <option value="">Selecione uma categoria</option>
+                            <option value="literatura">Literatura</option>
+                            <option value="ciencia">Ciência</option>
+                            <option value="historia">História</option>
+                            <option value="filosofia">Filosofia</option>
+                            <option value="tecnologia">Tecnologia</option>
+                            <option value="autoajuda">Autoajuda</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookDescription">Descrição:</label>
+                        <textarea id="bookDescription" rows="4" placeholder="Breve descrição do livro"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookFile">Arquivo (PDF, EPUB, TXT):</label>
+                        <input type="file" id="bookFile" accept=".pdf,.epub,.txt">
+                    </div>
+                    
+                    <button class="btn-primary" onclick="uploadBook()">Enviar Livro</button>
+                </div>
+            </div>
+
+            <!-- Aba Favoritos - Livros marcados como favoritos -->
+            <div id="favorites" class="tab-content">
+                <h2>❤️ Seus Livros Favoritos</h2>
+                
+                <!-- Verificação de login para favoritos -->
+                <div id="favoritesLoginRequired" class="login-required" style="display: none;">
+                    <div class="login-prompt">
+                        <h3>🔐 Login Necessário</h3>
+                        <p>Para salvar favoritos, você precisa estar logado.</p>
+                        <a href="login.html" class="btn-primary">Fazer Login</a>
+                    </div>
+                </div>
+                
+                <div class="books-grid" id="favoritesGrid">
+                    <p style="text-align: center; color: #666; grid-column: 1/-1;">
+                        Nenhum livro favoritado ainda. Explore nossa biblioteca e adicione seus favoritos!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Aba Leitura Atual - Livros sendo lidos -->
+            <div id="reading" class="tab-content">
+                <h2>👁️ Lendo Agora</h2>
+                
+                <div class="books-grid" id="readingGrid">
+                    <p style="text-align: center; color: #666; grid-column: 1/-1;">
+                        Nenhuma leitura em andamento. Comece a ler um livro para vê-lo aqui!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Aba Perfil - Informações do usuário logado -->
+            <div id="profile" class="tab-content">
+                <h2>👤 Meu Perfil</h2>
+                <div class="profile-container">
+                    <!-- Cabeçalho do perfil com avatar e informações básicas -->
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <span id="avatarInitials">U</span>
+                        </div>
+                        <div class="profile-info">
+                            <h3 id="profileName">Nome do Usuário</h3>
+                            <p id="profileEmail">email@exemplo.com</p>
+                            <p id="profileJoinDate">Membro desde: Janeiro 2025</p>
+                        </div>
+                        <button class="btn-edit-profile" onclick="showEditProfile()">✏️ Editar Perfil</button>
+                    </div>
+
+                    <!-- Estatísticas do usuário -->
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="stat-number" id="userBooksRead">0</div>
+                            <div class="stat-label">Livros Lidos</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-number" id="userFavorites">0</div>
+                            <div class="stat-label">Favoritos</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-number" id="userContributions">0</div>
+                            <div class="stat-label">Contribuições</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-number" id="userReadingTime">0h</div>
+                            <div class="stat-label">Tempo de Leitura</div>
+                        </div>
+                    </div>
+
+                    <!-- Seções de atividade do usuário -->
+                    <div class="profile-sections">
+                        <div class="profile-section">
+                            <h4>📚 Últimas Leituras</h4>
+                            <div id="recentReads" class="recent-items">
+                                <p>Nenhuma leitura recente</p>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h4>📝 Minhas Contribuições</h4>
+                            <div id="userContributionsList" class="recent-items">
+                                <p>Nenhuma contribuição ainda</p>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h4>🎯 Metas de Leitura</h4>
+                            <div class="reading-goals">
+                                <div class="goal-item">
+                                    <label for="yearlyGoal">Meta anual de livros:</label>
+                                    <input type="number" id="yearlyGoal" value="12" min="1" max="365">
+                                    <button onclick="updateGoal()">Atualizar</button>
+                                </div>
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="goalProgress" style="width: 0%"></div>
+                                    </div>
+                                    <span id="goalText">0 de 12 livros (0%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Edição de Perfil -->
+        <div id="editProfileModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeEditProfile()">✕</button>
+                
+                <div class="modal-header">
+                    <h2>✏️ Editar Perfil</h2>
+                    <p>Atualize suas informações pessoais</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="editName">Apelido/Nick:</label>
+                    <input type="text" id="editName" placeholder="Seu apelido">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editEmail">E-mail:</label>
+                    <input type="email" id="editEmail" placeholder="seu@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editBio">Biografia:</label>
+                    <textarea id="editBio" rows="3" placeholder="Conte um pouco sobre você e seus interesses literários..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editLocation">Localização:</label>
+                    <input type="text" id="editLocation" placeholder="Cidade, Estado">
+                </div>
+
+                <h3 style="color: #4a54e1; margin: 20px 0 10px 0;">🔒 Alterar Senha</h3>
+                
+                <div class="form-group">
+                    <label for="currentPassword">Senha atual:</label>
+                    <input type="password" id="currentPassword" placeholder="Digite sua senha atual">
+                </div>
+                
+                <div class="form-group">
+                    <label for="newPassword">Nova senha:</label>
+                    <input type="password" id="newPassword" placeholder="Digite a nova senha">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmNewPassword">Confirmar nova senha:</label>
+                    <input type="password" id="confirmNewPassword" placeholder="Confirme a nova senha">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn-primary" onclick="updateProfile()">Salvar Alterações</button>
+                    <button class="btn" onclick="closeEditProfile()" style="background: #6c757d; color: white;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leitor de Livros Integrado -->
+        <div class="reader-container" id="readerContainer">
+            <div class="reader-header">
+                <h3 id="readerTitle">Título do Livro</h3>
+                <div class="reader-controls">
+                    <button class="btn" onclick="changeTextSize(-1)">A-</button>
+                    <button class="btn" onclick="changeTextSize(1)">A+</button>
+                    <button class="btn" onclick="toggleNightMode()">🌙</button>
+                    <button class="btn" onclick="closeReader()">❌</button>
+                </div>
+            </div>
+            <!-- Conteúdo do livro será carregado dinamicamente -->
+            <div id="readerContent"></div>
+        </div>
+    </div>
+
+    <!-- Scripts JavaScript -->
+    <script src="data.js"></script>
+    <script src="main-auth.js"></script>
+    <script src="ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>Livros Disponíveis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalReads">15,892</div>
+                        <div class="stat-label">
