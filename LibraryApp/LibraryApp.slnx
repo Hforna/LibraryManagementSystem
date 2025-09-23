@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/LibraryApp.UnitTests/LibraryApp.UnitTests.csproj" />
+  </Folder>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+  <Project Path="LibraryApp.Api/LibraryApp.Api.csproj" />
+  <Project Path="LibraryApp.Application/LibraryApp.Application.csproj" />
+  <Project Path="LibraryApp.Domain/LibraryApp.Domain.csproj" />
+  <Project Path="LibraryApp.Infrastructure/LibraryApp.Infrastructure.csproj" />
+</Solution>
