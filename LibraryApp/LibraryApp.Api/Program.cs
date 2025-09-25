@@ -1,3 +1,5 @@
+using LibraryApp.Api.Middlewares;
+using LibraryApp.Application;
 using LibraryApp.Infrastructure;
 using Scalar.AspNetCore;
 
@@ -10,6 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication(builder.Configuration);
 
 var app = builder.Build();
 
@@ -29,6 +32,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<GlobalExceptionHandler>();
 
 app.UseAuthorization();
 
