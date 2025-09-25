@@ -7,7 +7,7 @@ using System.Text;
 namespace LibraryApp.Domain.Entities
 {
     [Table("visualizacoes")]
-    public class View
+    public class View : Entity
     {
         [Key]
         [Column("id")]

@@ -6,8 +6,6 @@ namespace LibraryApp.Domain.Exceptions
 {
     public class UnauthorizedException : BaseException
     {
-        public override List<string> Errors { get; set; } = [];
-
         public UnauthorizedException(string error) : base(error)
         {
 

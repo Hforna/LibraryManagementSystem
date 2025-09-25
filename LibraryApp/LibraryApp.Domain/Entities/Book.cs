@@ -8,7 +8,7 @@ using System.Xml.Linq;
 namespace LibraryApp.Domain.Entities
 {
     [Table("livros")]
-    public class Book
+    public class Book : Entity
     {
         [Key]
         [Column("id")]

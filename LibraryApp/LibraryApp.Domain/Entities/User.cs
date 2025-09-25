@@ -8,15 +8,11 @@ using System.Text;
 
 namespace LibraryApp.Domain.Entities
 {
-    public class User : IdentityUser<long>
+    public class User : IdentityUser<long>, IEntity
     {
-        [Key]
-        [Column("id")]
-        public long Id { get; set; }
-
         [Column("nome")]
         [Required, MaxLength(150)]
-        public string Name { get; set; }
+        public override string UserName { get => base.UserName; set => base.UserName = UserName; }
 
         [Column("email")]
         [Required, MaxLength(150)]

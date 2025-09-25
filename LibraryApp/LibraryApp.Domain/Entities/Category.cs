@@ -20,7 +20,7 @@ namespace LibraryApp.Domain.Entities
     }
 
     [Table("livros_categorias")]
-    public class BookCategory
+    public class BookCategory : Entity
     {
         [Column("livro_id")]
         public long BookId { get; set; }

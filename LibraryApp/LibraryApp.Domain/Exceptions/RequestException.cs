@@ -6,8 +6,6 @@ namespace LibraryApp.Domain.Exceptions
 {
     public class RequestException : BaseException
     {
-        public override List<string> Errors { get; set; } = [];
-
         public RequestException(string error) : base(error)
         {
             

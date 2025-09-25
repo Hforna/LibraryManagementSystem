@@ -6,7 +6,7 @@ using System.Text;
 namespace LibraryApp.Domain.Entities
 {
     [Table("curtidas")]
-    public class Like
+    public class Like : Entity
     {
         [Column("usuario_id")]
         public long UserId { get; set; }
