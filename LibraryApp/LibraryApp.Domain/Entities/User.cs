@@ -12,7 +12,7 @@ namespace LibraryApp.Domain.Entities
     {
         [Column("nome")]
         [Required, MaxLength(150)]
-        public override string UserName { get => base.UserName; set => base.UserName = UserName; }
+        public override string UserName { get => base.UserName; set => base.UserName = value; }
 
         [Column("email")]
         [Required, MaxLength(150)]

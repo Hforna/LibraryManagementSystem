@@ -1,0 +1,18 @@
+services:
+  libraryapp.api:
+    image: ${DOCKER_REGISTRY-}libraryappapi
+    build:
+      context: .
+      dockerfile: LibraryApp.Api/Dockerfile
+    networks: 
+        - backend
+   
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+
+volumes:
+  postgres_data:
+
+networks:
+    backend:

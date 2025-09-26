@@ -52,8 +52,6 @@ namespace LibraryApp.Infrastructure
         {
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
             services.AddSingleton<IEmailService, EmailService>();
-
-            services.Configure<SmtpSettings>(d => configuration.GetSection("services:smtp"));
         }
     }
 }

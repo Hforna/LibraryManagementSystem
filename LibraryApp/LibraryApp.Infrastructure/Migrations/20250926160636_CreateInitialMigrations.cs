@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryApp.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialTablesCreated : Migration
+    public partial class CreateInitialMigrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -59,13 +59,12 @@ namespace LibraryApp.Infrastructure.Migrations
                 name: "usuarios",
                 columns: table => new
                 {
-                    id = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    nome = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    nome = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     senha_hash = table.Column<string>(type: "text", nullable: false),
                     criado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
@@ -80,7 +79,7 @@ namespace LibraryApp.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_usuarios", x => x.id);
+                    table.PrimaryKey("PK_usuarios", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -124,7 +123,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_livros_usuarios_usuario_id",
                         column: x => x.usuario_id,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -144,7 +143,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_usuarios_logins_usuarios_UserId",
                         column: x => x.UserId,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -168,7 +167,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_usuarios_papeis_usuarios_UserId",
                         column: x => x.UserId,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -189,7 +188,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_usuarios_reivindicacoes_usuarios_UserId",
                         column: x => x.UserId,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -209,7 +208,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_usuarios_tokens_usuarios_UserId",
                         column: x => x.UserId,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -237,7 +236,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_comentarios_usuarios_usuario_id",
                         column: x => x.usuario_id,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -247,7 +246,8 @@ namespace LibraryApp.Infrastructure.Migrations
                 {
                     usuario_id = table.Column<long>(type: "bigint", nullable: false),
                     livro_id = table.Column<long>(type: "bigint", nullable: false),
-                    criado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    criado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -262,7 +262,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_curtidas_usuarios_usuario_id",
                         column: x => x.usuario_id,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -274,7 +274,8 @@ namespace LibraryApp.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     usuario_id = table.Column<long>(type: "bigint", nullable: false),
                     livro_id = table.Column<long>(type: "bigint", nullable: false),
-                    baixado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    baixado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    criado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -289,7 +290,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_downloads_usuarios_usuario_id",
                         column: x => x.usuario_id,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -298,7 +299,9 @@ namespace LibraryApp.Infrastructure.Migrations
                 columns: table => new
                 {
                     livro_id = table.Column<long>(type: "bigint", nullable: false),
-                    categoria_id = table.Column<long>(type: "bigint", nullable: false)
+                    categoria_id = table.Column<long>(type: "bigint", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false),
+                    criado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -325,7 +328,8 @@ namespace LibraryApp.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     usuario_id = table.Column<long>(type: "bigint", nullable: true),
                     livro_id = table.Column<long>(type: "bigint", nullable: false),
-                    visualizado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    visualizado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    criado_em = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -340,7 +344,7 @@ namespace LibraryApp.Infrastructure.Migrations
                         name: "FK_visualizacoes_usuarios_usuario_id",
                         column: x => x.usuario_id,
                         principalTable: "usuarios",
-                        principalColumn: "id",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                 });
 
