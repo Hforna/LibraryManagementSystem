@@ -28,5 +28,13 @@ namespace LibraryApp.Api.Controllers
 
             return Created(string.Empty, result);
         }
+
+        [HttpGet("confirm/email")]
+        public async Task<IActionResult> ConfirmUserEmailToken([FromQuery]string email, [FromQuery]string token)
+        {
+            await _userService.ConfirmEmail(email, token);
+
+            return Ok();
+        }
     }
 }

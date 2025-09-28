@@ -28,5 +28,10 @@ namespace LibraryApp.Infrastructure.Context
         {
             return await _context.Users.AnyAsync(x => x.Email == email);
         }
+
+        public async Task<User?> UserByEmailNotConfirmed(string email)
+        {
+            return await _context.Users.SingleOrDefaultAsync(x => x.Email == email && x.EmailConfirmed == false);
+        }
     }
 }

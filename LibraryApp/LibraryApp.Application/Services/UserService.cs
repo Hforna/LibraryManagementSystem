@@ -7,9 +7,11 @@ using LibraryApp.Domain.Exceptions;
 using LibraryApp.Domain.Repositories;
 using LibraryApp.Domain.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Security.Authentication;
 using System.Text;
 
 namespace LibraryApp.Application.Services
@@ -17,6 +19,7 @@ namespace LibraryApp.Application.Services
     public interface IUserService
     {
         public Task<UserResponse> CreateAccount(CreateUserRequest request, string uri);
+        public Task ConfirmEmail(string email, string token);
     }
 
     public class UserService : IUserService
@@ -37,6 +40,30 @@ namespace LibraryApp.Application.Services
             _cryptography = cryptography;
             _emailService = emailService;
             _userManager = userManager;
+        }
+
+        public async Task ConfirmEmail(string email, string token)
+        {
+            var userByEmail = await _uow.UserRepository.UserByEmailNotConfirmed(email);
+
+            if (userByEmail is null)
+                throw new RequestException("User by email was not found");
+
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+
+            var tokenIsValid = await _userManager.ConfirmEmailAsync(userByEmail, decodedToken);
+
+            if (!tokenIsValid.Succeeded)
+            {
+                var exception = new AuthenticationException("Token provided isn't valid");
+                _logger.LogError(message: $"Token {token} is not valid to email {email}", exception: exception);
+                throw exception;
+            }
+
+            userByEmail.EmailConfirmed = true;
+
+            _uow.GenericRepository.Update<User>(userByEmail);
+            await _uow.Commit();
         }
 
         public async Task<UserResponse> CreateAccount(CreateUserRequest request, string uri)
@@ -64,11 +91,11 @@ namespace LibraryApp.Application.Services
         private async Task SendEmailConfirmation(User user, string uri)
         {
             var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(confirmationToken));
             var emailDto = new SendEmailDto(
                 user.Email, 
                 user.UserName, 
-                "Confirme sua conta abaixo", $"Clique aqui para confirmar seu email: {uri}api/users/confirm-email?token{confirmationToken}&email={user.Email}");
+                "Confirme sua conta abaixo", $"Clique aqui para confirmar seu email: {uri}api/users/confirm-email?token{encodedToken}&email={user.Email}");
             await _emailService.SendEmail(emailDto);
         }
     }
