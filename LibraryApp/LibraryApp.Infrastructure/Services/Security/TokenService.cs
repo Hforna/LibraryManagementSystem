@@ -1,4 +1,6 @@
 ﻿using LibraryApp.Domain.Entities;
+using LibraryApp.Domain.Exceptions;
+using LibraryApp.Domain.Repositories;
 using LibraryApp.Domain.Services;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.IdentityModel.Tokens;
@@ -15,12 +17,16 @@ namespace LibraryApp.Infrastructure.Services.Security
         private readonly string _signKey;
         private readonly int _expiresAt;
         private readonly int _refreshExpiresAt;
+        private readonly IUnitOfWork _uow;
+        private readonly IRequestService _requestService;
 
-        public TokenService(string signKey, int expiresAt, int refreshExpiresAt)
+        public TokenService(string signKey, int expiresAt, int refreshExpiresAt, IUnitOfWork uow, IRequestService requestService)
         {
             _signKey = signKey;
             _expiresAt = expiresAt;
             _refreshExpiresAt = refreshExpiresAt;
+            _requestService = requestService;
+            _uow = uow;
         }
 
         public string GenerateAccessToken(List<Claim> claims, long userId)
@@ -45,9 +51,36 @@ namespace LibraryApp.Infrastructure.Services.Security
 
         public DateTime GetTimeToRefreshExpires() => DateTime.UtcNow.AddDays(_refreshExpiresAt);
 
-        public Task<User> GetUserByToken()
+        public List<Claim> GetTokenClaims()
         {
-            throw new NotImplementedException();
+            var token = _requestService.GetBearerToken() 
+                ?? throw new RequestException("Token não fornecido na requisição");
+
+            var @params = new TokenValidationParameters()
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = GenerateSecurityKey(),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            var handler = new JwtSecurityTokenHandler();
+            var result = handler.ValidateToken(token, @params, out SecurityToken validated);
+
+            return result.Claims.ToList();
+        }
+
+        public Task<User?> GetUserByToken()
+        {
+            var token = _requestService.GetBearerToken()
+               ?? throw new RequestException("Token não fornecido na requisição");
+
+            var handler = new JwtSecurityTokenHandler();
+            var read = handler.ReadJwtToken(token);
+            var id = long.Parse(read.Claims.FirstOrDefault(d => d.Type == ClaimTypes.Sid)!.Value);
+            var user = _uow.UserRepository.GetUserById(id);
+
+            return user;
         }
 
         private SymmetricSecurityKey GenerateSecurityKey()

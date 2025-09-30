@@ -23,6 +23,8 @@ namespace LibraryApp.Domain.Entities
 
         [Column("criado_em")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiration { get; set; }
         public ICollection<Book> Books { get; set; }
         public ICollection<Like> Likes { get; set; }
         public ICollection<Comment> Comments { get; set; }

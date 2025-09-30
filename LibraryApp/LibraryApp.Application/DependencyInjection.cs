@@ -23,6 +23,8 @@ namespace LibraryApp.Application
         static void AddServices(IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ILoginService, LoginService>();
+            services.AddScoped<ITokenAppService, TokenAppService>();
         }
     }
 }

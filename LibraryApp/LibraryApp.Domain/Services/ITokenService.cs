@@ -11,6 +11,7 @@ namespace LibraryApp.Domain.Services
         public string GenerateAccessToken(List<Claim> claims, long userId);
         public string GenerateRefreshToken();
         public DateTime GetTimeToRefreshExpires();
-        public Task<User> GetUserByToken();
+        public Task<User?> GetUserByToken();
+        public List<Claim> GetTokenClaims();
     }
 }

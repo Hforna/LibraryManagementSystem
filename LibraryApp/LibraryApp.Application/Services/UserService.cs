@@ -27,19 +27,22 @@ namespace LibraryApp.Application.Services
         private readonly IUnitOfWork _uow;
         private readonly IEmailService _emailService;
         private readonly UserManager<User> _userManager;
+        private readonly IPasswordCryptography _passwordCryptography;
 
         public UserService(
             ILogger<IUserService> logger,
             IMapper mapper,
             IUnitOfWork uow,
             IEmailService emailService,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IPasswordCryptography passwordCryptography)
         {
             _logger = logger;
             _mapper = mapper;
             _uow = uow;
             _emailService = emailService;
             _userManager = userManager;
+            _passwordCryptography = passwordCryptography;
         }
 
         public async Task ConfirmEmail(string email, string token)
@@ -72,10 +75,11 @@ namespace LibraryApp.Application.Services
             }
 
             var user = _mapper.Map<User>(request);
+            user.PasswordHash = _passwordCryptography.Encrypt(request.Password);
             user.UserName = request.UserName;
             user.EmailConfirmed = false;
 
-            var result = await _userManager.CreateAsync(user, request.Password);
+            var result = await _userManager.CreateAsync(user);
 
             if (!result.Succeeded)
             {

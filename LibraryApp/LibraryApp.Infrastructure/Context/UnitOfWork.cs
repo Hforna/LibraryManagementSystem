@@ -9,7 +9,6 @@ namespace LibraryApp.Infrastructure.Context
     {
         private readonly DataContext _context;
         public IUserRepository UserRepository { get; }
-
         public IGenericRepository GenericRepository { get; }
 
         public UnitOfWork(DataContext context, IUserRepository userRepository, IGenericRepository genericRepository)

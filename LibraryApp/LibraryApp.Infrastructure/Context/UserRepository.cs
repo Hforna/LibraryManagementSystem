@@ -24,6 +24,11 @@ namespace LibraryApp.Infrastructure.Context
                 .SingleOrDefaultAsync(x =>  x.Email == email);
         }
 
+        public async Task<User?> GetUserById(long id)
+        {
+            return await _context.Users.SingleOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<bool> HasUserByEmailAsync(string email)
         {
             return await _context.Users.AnyAsync(x => x.Email == email);

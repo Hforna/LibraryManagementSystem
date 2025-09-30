@@ -54,6 +54,17 @@ namespace LibraryApp.Infrastructure
         {
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
             services.AddSingleton<IEmailService, EmailService>();
+            services.AddScoped<IRequestService, RequestService>();
+
+            var signKey = configuration.GetValue<string>("services:jwt:signKey")!;
+            var expiresAt = configuration.GetValue<int>("services:jwt:expiresAt");
+            var refreshExpiresAt = configuration.GetValue<int>("services:jwt:refreshExpiresAt");
+            services.AddScoped<ITokenService, TokenService>(d => new TokenService(
+                signKey,
+                expiresAt, 
+                refreshExpiresAt, 
+                d.CreateScope().ServiceProvider.GetRequiredService<IUnitOfWork>(),
+                d.CreateScope().ServiceProvider.GetRequiredService<IRequestService>()));
         }
     }
 }

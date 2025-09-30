@@ -20,6 +20,8 @@ builder.Services.AddApplication(builder.Configuration);
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("services:smtp"));
 
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
