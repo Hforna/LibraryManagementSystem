@@ -13,6 +13,8 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddRouting(d => d.LowercaseUrls = true);
+
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 
@@ -35,6 +37,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+//Redirect automatically http requests to https requests
 app.UseHttpsRedirection();
 
 app.UseMiddleware<GlobalExceptionHandler>();

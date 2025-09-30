@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LibraryApp.Infrastructure.Context
 {
-    public class UnitOfWork : IUnitOfWork, IDisposable
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly DataContext _context;
         public IUserRepository UserRepository { get; }
@@ -22,13 +22,6 @@ namespace LibraryApp.Infrastructure.Context
         public async Task Commit()
         {
             await _context.SaveChangesAsync();
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
-            this.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

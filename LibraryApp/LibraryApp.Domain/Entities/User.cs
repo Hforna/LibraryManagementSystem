@@ -16,7 +16,7 @@ namespace LibraryApp.Domain.Entities
 
         [Column("email")]
         [Required, MaxLength(150)]
-        public string Email { get; set; }
+        public override string Email { get => base.Email; set => base.Email = value; }
         [Column("senha_hash")]
         [Required]
         public override string? PasswordHash { get => base.PasswordHash; set => base.PasswordHash = value; }

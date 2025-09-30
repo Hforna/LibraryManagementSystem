@@ -23,7 +23,7 @@ namespace LibraryApp.Infrastructure
             AddServices(services, configuration);
         }
 
-        static void AddDbContext(this IServiceCollection services, IConfiguration configuration)
+        static void AddDbContext(IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<DataContext>(d => d.UseNpgsql(configuration.GetConnectionString("postgres")));
 
@@ -34,6 +34,8 @@ namespace LibraryApp.Infrastructure
                 options.Password.RequiredLength = 8;
                 options.User.RequireUniqueEmail = true;
                 options.SignIn.RequireConfirmedEmail = true;
+
+                options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultProvider;
             })
              .AddRoles<Role>()
              .AddEntityFrameworkStores<DataContext>()
