@@ -16,6 +16,7 @@ namespace LibraryApp.Application.Services
     public interface ILoginService
     {
         public Task<LoginResponse> DoLoginByApplication(LoginRequest request);
+        public Task<LoginResponse> HandleGoogleCallback(string userName, string email, string? pictureUrl);
     }
 
     public class LoginService : ILoginService
@@ -65,6 +66,41 @@ namespace LibraryApp.Application.Services
             await _uow.Commit();
 
             return new LoginResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = user.RefreshToken,
+                RefreshTokenExpiration = (DateTime)user.RefreshTokenExpiration
+            };
+        }
+
+        public async Task<LoginResponse> HandleGoogleCallback(string userName, string email, string? pictureUrl)
+        {
+            var user = await _uow.UserRepository.GetUserByEmailAsync(email);
+
+            if (user is null)
+            {
+                //add picture management soon
+                user = new User()
+                {
+                    UserName = userName,
+                    Email = email,
+                    EmailConfirmed = true,
+                    NormalizedEmail = email.ToUpper(),
+                    PasswordHash = "-"
+                };
+
+                await _uow.GenericRepository.Add<User>(user);
+                await _uow.Commit();
+            }
+
+            var accessToken = _tokenService.GenerateAccessToken(new List<Claim>(), user.Id);
+            user.RefreshToken = _tokenService.GenerateRefreshToken();
+            user.RefreshTokenExpiration = _tokenService.GetTimeToRefreshExpires();
+
+            _uow.GenericRepository.Update<User>(user);
+            await _uow.Commit();
+
+            return new LoginResponse()
             {
                 AccessToken = accessToken,
                 RefreshToken = user.RefreshToken,
