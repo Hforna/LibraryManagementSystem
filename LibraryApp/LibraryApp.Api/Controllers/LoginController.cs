@@ -43,6 +43,9 @@ namespace LibraryApp.Api.Controllers
         [HttpGet("google-callback")]
         public async Task<IActionResult> GoogleCallback()
         {
+            //endpoint de callback quando a requisicao estiver com os cookies definidos pelo google
+
+            //tenta autenticar o usuario pelas informacoes recebidas pelo google
             var authenticate = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             if (IsNotAuthenticated(authenticate))
