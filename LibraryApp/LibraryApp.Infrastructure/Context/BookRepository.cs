@@ -10,6 +10,11 @@ public class BookRepository : IBookRepository
 
     public BookRepository(DataContext dataContext) => _context = dataContext;
 
+    public async Task<bool> BookByTitleExists(string title)
+    {
+        return await _context.Books.AnyAsync(d => d.Title == title);
+    }
+
     public async Task<List<Category>> GetCategories(List<long> categoriesIds)
     {
         return await _context.Categories

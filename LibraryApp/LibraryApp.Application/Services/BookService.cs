@@ -38,12 +38,17 @@ namespace LibraryApp.Application.Services
 
         public async Task<BookResponse> CreateBook(CreateBookRequest request)
         {
+            var titleExists = await _uow.BookRepository.BookByTitleExists(request.Title);
+
+            if (titleExists)
+                throw new RequestException("Livro com mesmo nome ja existe");
+
             var categories = await _uow.BookRepository.GetCategories(request.CategoriesIds);
 
             if (categories.Count != request.CategoriesIds.Count)
                 throw new RequestException("Categorias fornecidas invalidas");
 
-            using var file = request.File.OpenReadStream();
+            var file = request.File.OpenReadStream();
             var validateFile = _fileService.ValidatePdf(file);
 
             if (!validateFile.isValid)
@@ -54,7 +59,7 @@ namespace LibraryApp.Application.Services
 
             if (request.Cover is not null)
             {
-                using var image = request.Cover.OpenReadStream();
+                var image = request.Cover.OpenReadStream();
                 var validateImage = _fileService.ValidateImage(image);
 
                 if (!validateImage.isValid)

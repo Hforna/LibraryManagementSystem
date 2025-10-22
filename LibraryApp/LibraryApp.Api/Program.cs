@@ -6,6 +6,7 @@ using LibraryApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddRouting(d => d.LowercaseUrls = true);
@@ -76,8 +78,6 @@ if (app.Environment.IsDevelopment())
     });
 
     app.UseReDoc(opt => opt.SpecUrl("/openapi/v1.json"));
-
-    app.MapScalarApiReference();
 
     using (var scope = app.Services.CreateScope())
     {

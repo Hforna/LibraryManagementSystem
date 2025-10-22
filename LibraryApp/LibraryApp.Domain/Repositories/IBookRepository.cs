@@ -6,4 +6,5 @@ public interface IBookRepository
 {
     public Task<Book?> GetFullBook(long id);
     public Task<List<Category>> GetCategories(List<long> categoriesIds);
+    public Task<bool> BookByTitleExists(string title);
 }

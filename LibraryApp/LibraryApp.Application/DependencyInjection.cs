@@ -27,7 +27,7 @@ namespace LibraryApp.Application
             services.AddScoped<ITokenAppService, TokenAppService>();
             services.AddScoped<IBookService, BookService>();
 
-            services.AddSingleton<IFileService, FileService>();
+            services.AddScoped<IFileService, FileService>();
         }
     }
 }

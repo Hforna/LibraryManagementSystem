@@ -56,6 +56,7 @@ namespace LibraryApp.Infrastructure
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
             services.AddSingleton<IEmailService, EmailService>();
             services.AddScoped<IRequestService, RequestService>();
+            services.AddScoped<IStorageService, GoogleStorageService>();
 
             var signKey = configuration.GetValue<string>("services:jwt:signKey")!;
             var expiresAt = configuration.GetValue<int>("services:jwt:expiresAt");
