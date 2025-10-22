@@ -45,6 +45,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     jwtOptions.TokenValidationParameters = @params;
 });
 
+builder.Services.AddCors(d => d.AddPolicy("allowAny", d => d.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
 builder.Services.AddAuthentication(opt =>
 {
     opt.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -82,6 +84,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseCors("allowAny");
 
 app.UseMiddleware<GlobalExceptionHandler>();
 

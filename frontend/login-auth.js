@@ -1,23 +1,16 @@
 /*
- * BIBLIOTECA VIRTUAL - JAVASCRIPT DA TELA DE LOGIN
- * Lógica de autenticação e validações para a tela independente
- * Inclui: login, cadastro, validações em tempo real, animações
+ * BIBLIOTECA VIRTUAL - JAVASCRIPT DA TELA DE LOGIN (API REAL)
+ * Integrado com backend .NET em https://localhost:5001
  */
 
 // ===========================================
 // CONTROLE DE FORMULÁRIOS
 // ===========================================
 
-/**
- * Alterna entre formulários de login, cadastro e recuperação
- * @param {string} formType - Tipo do formulário ('login', 'register', 'forgot')
- */
 function showAuthForm(formType) {
-    // Remover classes ativas
     document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
     
-    // Ativar formulário selecionado
     if (formType === 'login') {
         document.querySelectorAll('.auth-tab')[0].classList.add('active');
         document.getElementById('loginForm').classList.add('active');
@@ -29,28 +22,20 @@ function showAuthForm(formType) {
     }
 }
 
-/**
- * Exibe formulário de recuperação de senha
- */
 function showForgotPassword() {
     showAuthForm('forgot');
 }
 
 // ===========================================
-// SISTEMA DE LOGIN
+// SISTEMA DE LOGIN (API REAL)
 // ===========================================
 
-/**
- * Processa o login do usuário
- * @param {Event} event - Evento do formulário
- */
-function login(event) {
+async function login(event) {
     event.preventDefault();
     
     const credential = document.getElementById('loginCredential').value.trim();
     const password = document.getElementById('loginPassword').value;
 
-    // Validação básica
     if (!credential || !password) {
         showNotification('Por favor, preencha todos os campos.', 'error');
         return;
@@ -59,78 +44,35 @@ function login(event) {
     // Mostrar loading
     showButtonLoading('loginForm');
 
-    // Simular delay de autenticação
-    setTimeout(() => {
-        // Buscar usuário no banco de dados simulado
-        const foundUser = usersDatabase.find(user => 
-            user.nick.toLowerCase() === credential.toLowerCase() || 
-            user.email.toLowerCase() === credential.toLowerCase()
-        );
+    try {
+        // Chamar API real
+        const result = await AuthService.login(credential, password);
 
-        if (foundUser && foundUser.password === password) {
-            // Login bem-sucedido
-            saveUserSession(foundUser);
-            showNotification(`Bem-vindo de volta, ${foundUser.nick}!`, 'success');
+        if (result.success) {
+            showNotification(`Bem-vindo de volta, ${result.user.userName}!`, 'success');
             
-            // Redirecionar após 1.5 segundos
+            // Redirecionar após 1 segundo
             setTimeout(() => {
                 window.location.href = 'index.html';
-            }, 1500);
-            
+            }, 1000);
         } else {
-            // Verificar se é um login de demonstração
-            if (tryDemoLogin(credential, password)) {
-                return;
-            }
-            
-            // Login falhou
             hideButtonLoading('loginForm');
-            showNotification('Credenciais inválidas. Tente novamente.', 'error');
-            
-            // Destacar campos com erro
+            showNotification(result.error || 'Credenciais inválidas. Tente novamente.', 'error');
             addValidationClass('loginCredential', 'error');
             addValidationClass('loginPassword', 'error');
         }
-    }, 1000);
-}
-
-/**
- * Tenta login com credenciais de demonstração
- * @param {string} credential - Credencial informada
- * @param {string} password - Senha informada
- * @returns {boolean} True se foi login de demo
- */
-function tryDemoLogin(credential, password) {
-    // Permitir login simulado para demonstração
-    const isEmail = validateEmail(credential);
-    const displayName = isEmail ? credential.split('@')[0] : credential;
-    
-    const simulatedUser = {
-        nick: displayName,
-        email: isEmail ? credential : credential + '@email.com',
-        password: password,
-        joinDate: 'Janeiro 2025'
-    };
-    
-    saveUserSession(simulatedUser);
-    showNotification(`Bem-vindo, ${displayName}! (Login de demonstração)`, 'success');
-    
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 1500);
-    
-    return true;
+    } catch (error) {
+        hideButtonLoading('loginForm');
+        showNotification('Erro ao conectar com o servidor. Tente novamente.', 'error');
+        console.error('Erro no login:', error);
+    }
 }
 
 // ===========================================
-// SISTEMA DE CADASTRO
+// SISTEMA DE CADASTRO (API REAL)
 // ===========================================
 
-/**
- * Processa o cadastro de novo usuário
- * @param {Event} event - Evento do formulário
- */
-function register(event) {
+async function register(event) {
     event.preventDefault();
     
     const nick = document.getElementById('registerNick').value.trim();
@@ -139,9 +81,15 @@ function register(event) {
     const confirmPassword = document.getElementById('confirmPassword').value;
     const acceptTerms = document.getElementById('acceptTerms').checked;
 
-    // Validações
+    // Validações client-side
     if (!nick || !email || !password || !confirmPassword) {
         showNotification('Por favor, preencha todos os campos obrigatórios.', 'error');
+        return;
+    }
+
+    if (nick.length < 4) {
+        showNotification('O apelido deve ter no mínimo 4 caracteres.', 'error');
+        addValidationClass('registerNick', 'error');
         return;
     }
 
@@ -151,15 +99,15 @@ function register(event) {
         return;
     }
 
-    if (password !== confirmPassword) {
-        showNotification('As senhas não coincidem.', 'error');
-        addValidationClass('confirmPassword', 'error');
+    if (password.length < 8) {
+        showNotification('A senha deve ter no mínimo 8 caracteres.', 'error');
+        addValidationClass('registerPassword', 'error');
         return;
     }
 
-    if (getPasswordStrength(password) === 'weak') {
-        showNotification('Senha muito fraca. Use pelo menos 6 caracteres.', 'error');
-        addValidationClass('registerPassword', 'error');
+    if (password !== confirmPassword) {
+        showNotification('As senhas não coincidem.', 'error');
+        addValidationClass('confirmPassword', 'error');
         return;
     }
 
@@ -168,153 +116,90 @@ function register(event) {
         return;
     }
 
-    // Verificar duplicatas
-    if (isNickTaken(nick)) {
-        showNotification('Este nick já está em uso. Escolha outro.', 'error');
-        addValidationClass('registerNick', 'error');
-        return;
-    }
-
-    if (isEmailTaken(email)) {
-        showNotification('Este e-mail já está cadastrado.', 'error');
-        addValidationClass('registerEmail', 'error');
-        return;
-    }
-
     // Mostrar loading
     showButtonLoading('registerForm');
 
-    // Simular delay de cadastro
-    setTimeout(() => {
-        // Criar novo usuário
-        const newUser = {
-            nick: nick,
-            email: email,
-            password: password,
-            joinDate: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-        };
-        
-        // Adicionar ao banco simulado
-        usersDatabase.push(newUser);
-        
-        // Salvar sessão
-        saveUserSession(newUser);
-        
-        showNotification(`Conta criada com sucesso! Bem-vindo, ${nick}!`, 'success');
-        
-        // Redirecionar
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
-        
-    }, 1200);
+    try {
+        // Chamar API real
+        const result = await AuthService.register(nick, email, password);
+
+        if (result.success) {
+            hideButtonLoading('registerForm');
+            
+            // Mostrar mensagem de sucesso com instrução sobre email
+            showNotification(result.message || 'Conta criada! Verifique seu email.', 'success');
+            
+            // Limpar formulário
+            document.getElementById('registerNick').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('acceptTerms').checked = false;
+            
+            // Trocar para formulário de login após 3 segundos
+            setTimeout(() => {
+                showAuthForm('login');
+                showNotification('Confirme seu email antes de fazer login.', 'info');
+            }, 3000);
+            
+        } else {
+            hideButtonLoading('registerForm');
+            showNotification(result.error || 'Erro ao criar conta.', 'error');
+        }
+    } catch (error) {
+        hideButtonLoading('registerForm');
+        showNotification('Erro ao conectar com o servidor. Tente novamente.', 'error');
+        console.error('Erro no cadastro:', error);
+    }
 }
 
 // ===========================================
 // RECUPERAÇÃO DE SENHA
 // ===========================================
 
-/**
- * Processa recuperação de senha
- * @param {Event} event - Evento do formulário
- */
-function resetPassword(event) {
+async function resetPassword(event) {
     event.preventDefault();
     
     const credential = document.getElementById('forgotCredential').value.trim();
     
     if (!credential) {
-        showNotification('Por favor, digite seu nick ou e-mail.', 'error');
+        showNotification('Por favor, digite seu e-mail.', 'error');
         return;
     }
 
-    // Mostrar loading
     showButtonLoading('forgotForm');
 
-    // Simular envio de e-mail
+    // Simular envio (backend não tem endpoint ainda)
     setTimeout(() => {
-        const foundUser = usersDatabase.find(user => 
-            user.nick.toLowerCase() === credential.toLowerCase() || 
-            user.email.toLowerCase() === credential.toLowerCase()
-        );
-
-        if (foundUser) {
-            showNotification(`Link de recuperação enviado para ${foundUser.email}!`, 'success');
-        } else {
-            showNotification('Se este usuário existir, um link foi enviado.', 'info');
-        }
-        
+        showNotification('Se este e-mail estiver cadastrado, você receberá instruções.', 'info');
         hideButtonLoading('forgotForm');
         
-        // Voltar ao login após 3 segundos
         setTimeout(() => {
             showAuthForm('login');
             document.getElementById('forgotCredential').value = '';
         }, 3000);
-        
     }, 1500);
 }
 
 // ===========================================
-// LOGIN SOCIAL (SIMULADO)
+// LOGIN SOCIAL (API REAL)
 // ===========================================
 
-/**
- * Simula login com Google
- */
 function loginWithGoogle() {
-    showNotification('Conectando com Google...', 'info');
+    showNotification('Redirecionando para Google...', 'info');
     
-    setTimeout(() => {
-        const googleUser = {
-            nick: 'GoogleUser' + Date.now().toString().slice(-4),
-            email: 'usuario@gmail.com',
-            provider: 'google',
-            joinDate: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-        };
-        
-        saveUserSession(googleUser);
-        showNotification('Login com Google realizado!', 'success');
-        
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
-    }, 1000);
+    // Redirecionar para endpoint de Google OAuth
+    AuthService.loginWithGoogle();
 }
 
-/**
- * Simula login com Facebook
- */
 function loginWithFacebook() {
-    showNotification('Conectando com Facebook...', 'info');
-    
-    setTimeout(() => {
-        const facebookUser = {
-            nick: 'FacebookUser' + Date.now().toString().slice(-4),
-            email: 'usuario@facebook.com',
-            provider: 'facebook',
-            joinDate: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-        };
-        
-        saveUserSession(facebookUser);
-        showNotification('Login com Facebook realizado!', 'success');
-        
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
-    }, 1000);
+    showNotification('Login com Facebook não disponível no momento.', 'warning');
 }
 
-/**
- * Simula cadastro com Google
- */
 function registerWithGoogle() {
     loginWithGoogle();
 }
 
-/**
- * Simula cadastro com Facebook
- */
 function registerWithFacebook() {
     loginWithFacebook();
 }
@@ -323,43 +208,13 @@ function registerWithFacebook() {
 // VALIDAÇÕES E UTILITÁRIOS
 // ===========================================
 
-/**
- * Verifica se nick está em uso
- * @param {string} nick - Nick para verificar
- * @returns {boolean} True se já existe
- */
-function isNickTaken(nick) {
-    return usersDatabase.some(user => 
-        user.nick.toLowerCase() === nick.toLowerCase()
-    );
-}
-
-/**
- * Verifica se email está cadastrado
- * @param {string} email - Email para verificar
- * @returns {boolean} True se já existe
- */
-function isEmailTaken(email) {
-    return usersDatabase.some(user => 
-        user.email.toLowerCase() === email.toLowerCase()
-    );
-}
-
-/**
- * Calcula força da senha
- * @param {string} password - Senha para avaliar
- * @returns {string} 'weak', 'medium' ou 'strong'
- */
 function getPasswordStrength(password) {
     if (!password) return 'weak';
     
     let strength = 0;
     
-    // Comprimento
     if (password.length >= 6) strength++;
     if (password.length >= 8) strength++;
-    
-    // Caracteres especiais
     if (/[A-Z]/.test(password)) strength++;
     if (/[0-9]/.test(password)) strength++;
     if (/[^A-Za-z0-9]/.test(password)) strength++;
@@ -369,31 +224,6 @@ function getPasswordStrength(password) {
     return 'strong';
 }
 
-/**
- * Salva sessão do usuário
- * @param {Object} user - Dados do usuário
- */
-function saveUserSession(user) {
-    // Em um sistema real, salvaria no localStorage ou cookie
-    // Aqui apenas simula o processo
-    console.log('Sessão salva:', user);
-    
-    // Simular salvamento de sessão
-    const sessionData = {
-        user: user,
-        timestamp: new Date().toISOString(),
-        sessionId: 'session_' + Date.now()
-    };
-    
-    // Em produção, usaria localStorage aqui
-    console.log('Dados da sessão:', sessionData);
-}
-
-/**
- * Adiciona classe de validação ao campo
- * @param {string} fieldId - ID do campo
- * @param {string} type - Tipo de validação ('error' ou 'success')
- */
 function addValidationClass(fieldId, type) {
     const field = document.getElementById(fieldId);
     if (!field) return;
@@ -403,17 +233,12 @@ function addValidationClass(fieldId, type) {
         wrapper.classList.remove('error', 'success');
         wrapper.classList.add(type);
         
-        // Remover classe após alguns segundos
         setTimeout(() => {
             wrapper.classList.remove(type);
         }, 3000);
     }
 }
 
-/**
- * Alterna visibilidade da senha
- * @param {string} fieldId - ID do campo de senha
- */
 function togglePasswordVisibility(fieldId) {
     const field = document.getElementById(fieldId);
     const button = field.nextElementSibling;
@@ -427,24 +252,14 @@ function togglePasswordVisibility(fieldId) {
     }
 }
 
-/**
- * Preenche campos de login com dados de demonstração
- * @param {string} nick - Nick do usuário
- * @param {string} password - Senha do usuário
- */
 function fillLogin(nick, password) {
     document.getElementById('loginCredential').value = nick;
     document.getElementById('loginPassword').value = password;
-    
-    // Mostrar feedback visual
     showNotification(`Campos preenchidos com ${nick}`, 'info');
     
-    // Focar no botão de login
     setTimeout(() => {
         const loginButton = document.querySelector('#loginForm button[type="submit"]');
-        if (loginButton) {
-            loginButton.focus();
-        }
+        if (loginButton) loginButton.focus();
     }, 100);
 }
 
@@ -452,10 +267,6 @@ function fillLogin(nick, password) {
 // INTERFACE E FEEDBACK
 // ===========================================
 
-/**
- * Mostra loading no botão do formulário
- * @param {string} formId - ID do formulário
- */
 function showButtonLoading(formId) {
     const form = document.getElementById(formId);
     const button = form.querySelector('button[type="submit"]');
@@ -467,10 +278,6 @@ function showButtonLoading(formId) {
     btnLoading.style.display = 'flex';
 }
 
-/**
- * Esconde loading do botão
- * @param {string} formId - ID do formulário
- */
 function hideButtonLoading(formId) {
     const form = document.getElementById(formId);
     const button = form.querySelector('button[type="submit"]');
@@ -482,32 +289,20 @@ function hideButtonLoading(formId) {
     btnLoading.style.display = 'none';
 }
 
-/**
- * Exibe notificação
- * @param {string} message - Mensagem da notificação
- * @param {string} type - Tipo ('success', 'error', 'warning', 'info')
- */
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
     const text = notification.querySelector('.notification-text');
     
-    // Remover classes anteriores
     notification.classList.remove('success', 'error', 'warning', 'info');
-    
-    // Configurar notificação
     text.textContent = message;
     notification.classList.add(type);
     notification.classList.remove('hidden');
     
-    // Auto-hide após 4 segundos
     setTimeout(() => {
         hideNotification();
     }, 4000);
 }
 
-/**
- * Esconde notificação
- */
 function hideNotification() {
     const notification = document.getElementById('notification');
     notification.classList.add('hidden');
@@ -517,11 +312,7 @@ function hideNotification() {
 // EVENT LISTENERS
 // ===========================================
 
-/**
- * Configura todos os event listeners
- */
 function setupEventListeners() {
-    // Validação em tempo real da força da senha
     const registerPassword = document.getElementById('registerPassword');
     if (registerPassword) {
         registerPassword.addEventListener('input', function() {
@@ -529,7 +320,6 @@ function setupEventListeners() {
         });
     }
 
-    // Validação da confirmação de senha
     const confirmPassword = document.getElementById('confirmPassword');
     if (confirmPassword) {
         confirmPassword.addEventListener('input', function() {
@@ -537,7 +327,6 @@ function setupEventListeners() {
         });
     }
 
-    // Validação de e-mail em tempo real
     const emailFields = document.querySelectorAll('input[type="email"]');
     emailFields.forEach(field => {
         field.addEventListener('blur', function() {
@@ -549,7 +338,6 @@ function setupEventListeners() {
         });
     });
 
-    // Enter para submeter formulários
     document.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             const activeForm = document.querySelector('.auth-form.active');
@@ -562,7 +350,6 @@ function setupEventListeners() {
         }
     });
 
-    // Limpar validações ao focar nos campos
     document.querySelectorAll('input').forEach(input => {
         input.addEventListener('focus', function() {
             const wrapper = this.closest('.input-wrapper');
@@ -573,10 +360,6 @@ function setupEventListeners() {
     });
 }
 
-/**
- * Atualiza indicador de força da senha
- * @param {string} password - Senha atual
- */
 function updatePasswordStrength(password) {
     const strength = getPasswordStrength(password);
     const strengthFill = document.getElementById('passwordStrength');
@@ -584,15 +367,12 @@ function updatePasswordStrength(password) {
     
     if (!strengthFill || !strengthText) return;
     
-    // Remover classes anteriores
     strengthFill.classList.remove('weak', 'medium', 'strong');
     strengthText.classList.remove('weak', 'medium', 'strong');
     
-    // Adicionar nova classe
     strengthFill.classList.add(strength);
     strengthText.classList.add(strength);
     
-    // Atualizar texto
     const strengthTexts = {
         weak: 'Senha fraca',
         medium: 'Senha média',
@@ -602,15 +382,12 @@ function updatePasswordStrength(password) {
     strengthText.textContent = password ? strengthTexts[strength] : 'Digite uma senha';
 }
 
-/**
- * Valida se as senhas coincidem
- */
 function validatePasswordMatch() {
     const password = document.getElementById('registerPassword').value;
     const confirm = document.getElementById('confirmPassword').value;
     const matchIcon = document.getElementById('passwordMatch');
     
-    if (!confirm) {
+    if (!confirm){
         matchIcon.textContent = '';
         return;
     }
@@ -624,16 +401,10 @@ function validatePasswordMatch() {
     }
 }
 
-/**
- * Mostra termos de uso (simulado)
- */
 function showTerms() {
     showNotification('Termos de Uso: Em construção...', 'info');
 }
 
-/**
- * Mostra política de privacidade (simulado)
- */
 function showPrivacy() {
     showNotification('Política de Privacidade: Em construção...', 'info');
 }
@@ -642,44 +413,33 @@ function showPrivacy() {
 // INICIALIZAÇÃO
 // ===========================================
 
-/**
- * Inicializa a página de login
- */
 function init() {
     console.log('🔑 Iniciando tela de login...');
     
-    // Configurar eventos
     setupEventListeners();
-    
-    // Verificar se já está logado
     checkExistingSession();
-    
-    // Efeitos visuais iniciais
     startVisualEffects();
     
     console.log('✅ Tela de login iniciada!');
 }
 
-/**
- * Verifica se já existe sessão ativa
- */
 function checkExistingSession() {
-    // Em um sistema real, verificaria localStorage/cookies
-    // Para demonstração, não implementamos persistência
-    console.log('🔍 Verificando sessão existente...');
+    // Se já está autenticado, redirecionar para index
+    if (AuthService && AuthService.isAuthenticated()) {
+        const user = AuthService.getCurrentUser();
+        showNotification(`Você já está logado como ${user.userName}!`, 'info');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+    }
 }
 
-/**
- * Inicia efeitos visuais
- */
 function startVisualEffects() {
-    // Adicionar animação aos livros flutuantes
     const floatingBooks = document.querySelectorAll('.floating-book');
     floatingBooks.forEach((book, index) => {
         book.style.animationDelay = `${index * 2}s`;
     });
     
-    // Efeito de digitação no primeiro campo
     setTimeout(() => {
         const firstInput = document.querySelector('#loginForm input');
         if (firstInput) {

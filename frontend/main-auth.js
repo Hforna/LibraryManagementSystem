@@ -1,128 +1,61 @@
 /*
- * BIBLIOTECA VIRTUAL - AUTENTICAÇÃO DA TELA PRINCIPAL
- * Sistema simplificado de autenticação para a página principal
- * Inclui: verificação de sessão, logout, proteção de recursos
+ * BIBLIOTECA VIRTUAL - AUTENTICAÇÃO DA TELA PRINCIPAL (API REAL)
+ * Integrado com backend .NET em https://localhost:5001
  */
 
 // ===========================================
 // VERIFICAÇÃO DE SESSÃO
 // ===========================================
 
-/**
- * Verifica se existe sessão ativa do usuário
- * Em um sistema real, verificaria localStorage/cookies
- */
 function checkAuthState() {
-    // Simular verificação de sessão
-    // Em produção, verificaria localStorage ou cookie
-    const sessionData = getStoredSession();
+    console.log('🔍 Verificando estado de autenticação...');
     
-    if (sessionData && sessionData.user) {
-        // Restaurar dados do usuário
-        currentUser = sessionData.user;
+    if (AuthService && AuthService.isAuthenticated()) {
+        const userData = AuthService.getCurrentUser();
         
-        // Restaurar estatísticas se existirem
-        if (sessionData.stats) {
-            userStats = sessionData.stats;
+        if (userData) {
+            // Restaurar dados do usuário na aplicação
+            currentUser = {
+                name: userData.userName || userData.name,
+                email: userData.email,
+                id: userData.userId,
+                joinDate: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+                bio: '',
+                location: ''
+            };
+            
+            updateAuthUI();
+            updateProfileData();
+            console.log('✅ Sessão restaurada:', currentUser.name);
+            
+            // Mostrar mensagem de boas-vindas
+            showWelcomeMessage(currentUser.name);
         }
-        
-        // Restaurar favoritos e leituras
-        if (sessionData.favorites) {
-            sessionData.favorites.forEach(id => favorites.add(id));
-        }
-        
-        if (sessionData.reading) {
-            sessionData.reading.forEach(id => currentlyReading.add(id));
-        }
-        
-        updateAuthUI();
-        console.log('✅ Sessão restaurada:', currentUser.name);
     } else {
-        // Verificar se veio do login (parâmetros da URL)
-        checkLoginRedirect();
-    }
-}
-
-/**
- * Verifica se veio de redirecionamento do login
- */
-function checkLoginRedirect() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const loginSuccess = urlParams.get('login');
-    const userName = urlParams.get('user');
-    
-    if (loginSuccess === 'success' && userName) {
-        // Simular dados de usuário logado
-        currentUser = {
-            name: decodeURIComponent(userName),
-            email: userName.includes('@') ? userName : userName + '@email.com',
-            id: Date.now(),
-            joinDate: 'Janeiro 2025',
-            bio: '',
-            location: ''
-        };
-        
+        console.log('❌ Usuário não autenticado');
+        // Limpar dados de usuário se existir
+        if (typeof currentUser !== 'undefined') {
+            currentUser = null;
+        }
         updateAuthUI();
-        updateProfileData();
-        
-        // Limpar parâmetros da URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        showWelcomeMessage(currentUser.name);
     }
 }
 
-/**
- * Simula recuperação de sessão armazenada
- * Em produção, usaria localStorage ou cookies
- */
-function getStoredSession() {
-    // Simular dados de sessão
-    // Em produção: return JSON.parse(localStorage.getItem('userSession'));
-    return null;
-}
-
-/**
- * Exibe mensagem de boas-vindas
- * @param {string} userName - Nome do usuário
- */
 function showWelcomeMessage(userName) {
-    showNotification(`Bem-vindo de volta, ${userName}!`, 'success');
-    
-    // Destacar recursos disponíveis para usuário logado
-    setTimeout(() => {
-        highlightUserFeatures();
-    }, 2000);
-}
-
-/**
- * Destaca recursos disponíveis para usuários logados
- */
-function highlightUserFeatures() {
-    const userFeatures = [
-        { tab: 'favorites', message: 'Agora você pode favoritar livros!' },
-        { tab: 'upload', message: 'Contribua enviando seus próprios livros!' },
-        { tab: 'profile', message: 'Confira seu perfil personalizado!' }
-    ];
-    
-    userFeatures.forEach((feature, index) => {
+    // Mostrar apenas na primeira vez (verificar sessionStorage temporário)
+    const alreadyWelcomed = sessionStorage.getItem('welcomed');
+    if (!alreadyWelcomed) {
         setTimeout(() => {
-            const tab = document.querySelector(`[onclick="showTab('${feature.tab}')"]`);
-            if (tab) {
-                tab.style.animation = 'pulse 1s ease-in-out';
-                showNotification(feature.message, 'info');
-            }
-        }, index * 3000);
-    });
+            showNotification(`Bem-vindo de volta, ${userName}!`, 'success');
+        }, 500);
+        sessionStorage.setItem('welcomed', 'true');
+    }
 }
 
 // ===========================================
 // CONTROLE DE INTERFACE AUTENTICADA
 // ===========================================
 
-/**
- * Atualiza interface baseada no estado de autenticação
- */
 function updateAuthUI() {
     const loginBtn = document.getElementById('loginBtn');
     const userInfo = document.getElementById('userInfo');
@@ -130,52 +63,39 @@ function updateAuthUI() {
     const profileTab = document.getElementById('profileTab');
 
     if (currentUser) {
-        // Usuário logado - mostrar informações do usuário
+        // Usuário logado
         if (loginBtn) loginBtn.style.display = 'none';
         if (userInfo) userInfo.classList.remove('hidden');
         if (profileTab) profileTab.style.display = 'block';
         if (userName) userName.textContent = `👋 Olá, ${currentUser.name}!`;
         
-        // Mostrar formulários que requerem login
         showAuthenticatedContent();
-        
     } else {
-        // Usuário não logado - mostrar botão de login
+        // Usuário não logado
         if (loginBtn) loginBtn.style.display = 'block';
         if (userInfo) userInfo.classList.add('hidden');
         if (profileTab) profileTab.style.display = 'none';
         
-        // Esconder conteúdo que requer login
         hideAuthenticatedContent();
     }
 }
 
-/**
- * Mostra conteúdo que requer autenticação
- */
 function showAuthenticatedContent() {
-    // Mostrar formulário de upload
     const uploadForm = document.getElementById('uploadForm');
     const uploadLoginRequired = document.getElementById('uploadLoginRequired');
     if (uploadForm) uploadForm.style.display = 'block';
     if (uploadLoginRequired) uploadLoginRequired.style.display = 'none';
     
-    // Mostrar favoritos normalmente
     const favoritesLoginRequired = document.getElementById('favoritesLoginRequired');
     if (favoritesLoginRequired) favoritesLoginRequired.style.display = 'none';
 }
 
-/**
- * Esconde conteúdo que requer autenticação
- */
 function hideAuthenticatedContent() {
-    // Esconder formulário de upload e mostrar prompt de login
     const uploadForm = document.getElementById('uploadForm');
     const uploadLoginRequired = document.getElementById('uploadLoginRequired');
     if (uploadForm) uploadForm.style.display = 'none';
     if (uploadLoginRequired) uploadLoginRequired.style.display = 'block';
     
-    // Mostrar prompt de login nos favoritos se não houver nenhum
     const favoritesLoginRequired = document.getElementById('favoritesLoginRequired');
     if (favoritesLoginRequired && favorites.size === 0) {
         favoritesLoginRequired.style.display = 'block';
@@ -186,19 +106,18 @@ function hideAuthenticatedContent() {
 // LOGOUT E GERENCIAMENTO DE SESSÃO
 // ===========================================
 
-/**
- * Faz logout do usuário atual
- */
 function logout() {
     if (!currentUser) return;
     
     const userName = currentUser.name;
     
     if (confirm(`Tem certeza que deseja sair, ${userName}?`)) {
-        // Simular salvamento antes do logout
-        saveUserSession();
+        // Usar AuthService para fazer logout
+        if (AuthService) {
+            AuthService.logout();
+        }
         
-        // Limpar dados do usuário
+        // Limpar dados locais
         currentUser = null;
         favorites.clear();
         currentlyReading.clear();
@@ -209,56 +128,19 @@ function logout() {
             yearlyGoal: 12
         };
         
-        // Atualizar interface
+        // Limpar sessionStorage temporário
+        sessionStorage.removeItem('welcomed');
+        
         updateAuthUI();
-        
-        // Voltar para aba inicial
         showTab('home');
-        
-        // Mostrar mensagem de despedida
         showNotification(`Até logo, ${userName}!`, 'info');
-        
-        // Limpar sessão armazenada
-        clearStoredSession();
     }
-}
-
-/**
- * Salva dados da sessão atual
- * Em produção, salvaria no localStorage
- */
-function saveUserSession() {
-    if (!currentUser) return;
-    
-    const sessionData = {
-        user: currentUser,
-        stats: userStats,
-        favorites: Array.from(favorites),
-        reading: Array.from(currentlyReading),
-        timestamp: new Date().toISOString()
-    };
-    
-    // Em produção: localStorage.setItem('userSession', JSON.stringify(sessionData));
-    console.log('💾 Sessão salva:', sessionData);
-}
-
-/**
- * Limpa sessão armazenada
- */
-function clearStoredSession() {
-    // Em produção: localStorage.removeItem('userSession');
-    console.log('🗑️ Sessão limpa');
 }
 
 // ===========================================
 // PROTEÇÃO DE RECURSOS
 // ===========================================
 
-/**
- * Verifica se usuário está logado para acessar recurso
- * @param {string} action - Nome da ação sendo executada
- * @returns {boolean} True se autorizado
- */
 function requireLogin(action = 'acessar este recurso') {
     if (!currentUser) {
         showLoginPrompt(action);
@@ -267,15 +149,10 @@ function requireLogin(action = 'acessar este recurso') {
     return true;
 }
 
-/**
- * Exibe prompt para fazer login
- * @param {string} action - Ação que requer login
- */
 function showLoginPrompt(action) {
     const message = `Para ${action}, você precisa estar logado.`;
     showNotification(message, 'warning');
     
-    // Criar prompt modal customizado
     setTimeout(() => {
         if (confirm(`${message}\n\nGostaria de fazer login agora?`)) {
             window.location.href = 'login.html';
@@ -287,10 +164,6 @@ function showLoginPrompt(action) {
 // INTEGRAÇÃO COM FUNCIONALIDADES
 // ===========================================
 
-/**
- * Override da função toggleFavorite para verificar login
- * @param {number} bookId - ID do livro
- */
 function toggleFavorite(bookId) {
     if (!requireLogin('favoritar livros')) {
         return;
@@ -307,7 +180,7 @@ function toggleFavorite(bookId) {
         showNotification(`"${book.title}" adicionado aos favoritos!`, 'success');
     }
     
-    // Re-renderizar para atualizar botões
+    // Re-renderizar
     const currentTab = document.querySelector('.tab-content.active');
     if (currentTab && currentTab.id === 'home') {
         renderBooks(books);
@@ -319,9 +192,6 @@ function toggleFavorite(bookId) {
     saveUserSession();
 }
 
-/**
- * Override da função uploadBook para verificar login
- */
 function uploadBook() {
     if (!requireLogin('contribuir com livros')) {
         return;
@@ -333,7 +203,6 @@ function uploadBook() {
     const description = document.getElementById('bookDescription').value.trim();
     const file = document.getElementById('bookFile').files[0];
 
-    // Validações
     if (!title || !author || !category || !description) {
         showNotification('Por favor, preencha todos os campos obrigatórios.', 'error');
         return;
@@ -349,7 +218,6 @@ function uploadBook() {
         return;
     }
 
-    // Criar novo livro
     const newBook = {
         id: generateUniqueId(),
         title: title,
@@ -365,14 +233,8 @@ function uploadBook() {
     books.push(newBook);
     userStats.contributions++;
     updateProfileData();
-    
-    // Limpar formulário
     clearUploadForm();
-    
-    // Atualizar estatísticas
     updateStats();
-    
-    // Salvar sessão
     saveUserSession();
     
     showNotification(`Livro "${title}" enviado com sucesso! Obrigado, ${currentUser.name}!`, 'success');
@@ -382,19 +244,11 @@ function uploadBook() {
 // FUNÇÕES AUXILIARES
 // ===========================================
 
-/**
- * Verifica se formato do arquivo é válido
- * @param {string} filename - Nome do arquivo
- * @returns {boolean} True se válido
- */
 function isValidFileFormat(filename) {
     const extension = '.' + filename.split('.').pop().toLowerCase();
     return appConfig.supportedFormats.includes(extension);
 }
 
-/**
- * Limpa formulário de upload
- */
 function clearUploadForm() {
     document.getElementById('bookTitle').value = '';
     document.getElementById('bookAuthor').value = '';
@@ -403,13 +257,6 @@ function clearUploadForm() {
     document.getElementById('bookFile').value = '';
 }
 
-/**
- * Gera conteúdo de exemplo para livro enviado
- * @param {string} title - Título do livro
- * @param {string} author - Autor do livro
- * @param {string} description - Descrição do livro
- * @returns {string} Conteúdo HTML
- */
 function generateSampleContent(title, author, description) {
     return `
         <h3>Prefácio</h3>
@@ -421,7 +268,7 @@ function generateSampleContent(title, author, description) {
         <h3>Capítulo 1</h3>
         <p>Conteúdo do primeiro capítulo será exibido aqui após o processamento do arquivo enviado.</p>
         
-        <p><em>Nota: Este é um conteúdo de exemplo. Em um sistema real, o conteúdo seria extraído do arquivo enviado pelo usuário <strong>${author}</strong>.</em></p>
+        <p><em>Nota: Este é um conteúdo de exemplo. O conteúdo real será processado do arquivo enviado.</em></p>
         
         <h4>Informações de Contribuição:</h4>
         <ul>
@@ -432,38 +279,28 @@ function generateSampleContent(title, author, description) {
     `;
 }
 
-/**
- * Retorna nome da categoria baseado no título (função auxiliar)
- * @param {string} title - Título do livro
- * @returns {string} Nome da categoria
- */
 function getCategoryName(title) {
-    // Lógica simples para categorizar baseado em palavras-chave
     const titleLower = title.toLowerCase();
     
     if (titleLower.includes('história') || titleLower.includes('histórico')) return 'História';
     if (titleLower.includes('ciência') || titleLower.includes('física') || titleLower.includes('química')) return 'Ciência';
     if (titleLower.includes('filosofia') || titleLower.includes('ética')) return 'Filosofia';
-    if (titleLower.includes('tecnologia') || titleLower.includes('programação') || titleLower.includes('javascript')) return 'Tecnologia';
+    if (titleLower.includes('tecnologia') || titleLower.includes('programação')) return 'Tecnologia';
     if (titleLower.includes('autoajuda') || titleLower.includes('motivação')) return 'Autoajuda';
     
-    return 'Literatura'; // Categoria padrão
+    return 'Literatura';
 }
 
 // ===========================================
 // GERENCIAMENTO DE PERFIL
 // ===========================================
 
-/**
- * Exibe modal de edição de perfil
- */
 function showEditProfile() {
     if (!currentUser) {
         requireLogin('editar perfil');
         return;
     }
 
-    // Preencher formulário com dados atuais
     document.getElementById('editName').value = currentUser.name;
     document.getElementById('editEmail').value = currentUser.email;
     document.getElementById('editBio').value = currentUser.bio || '';
@@ -472,21 +309,14 @@ function showEditProfile() {
     document.getElementById('editProfileModal').classList.add('show');
 }
 
-/**
- * Fecha modal de edição de perfil
- */
 function closeEditProfile() {
     document.getElementById('editProfileModal').classList.remove('show');
     
-    // Limpar campos de senha por segurança
     document.getElementById('currentPassword').value = '';
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmNewPassword').value = '';
 }
 
-/**
- * Atualiza dados do perfil do usuário
- */
 function updateProfile() {
     if (!currentUser) return;
 
@@ -498,7 +328,6 @@ function updateProfile() {
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmNewPassword').value;
 
-    // Validações básicas
     if (!nick || !email) {
         showNotification('Apelido e e-mail são obrigatórios.', 'error');
         return;
@@ -509,21 +338,24 @@ function updateProfile() {
         return;
     }
 
-    // Validar alteração de senha se fornecida
     if (newPass) {
         if (newPass !== confirmPass) {
             showNotification('As novas senhas não coincidem.', 'error');
             return;
         }
+        
+        if (!currentPass) {
+            showNotification('Digite a senha atual para alterá-la.', 'error');
+            return;
+        }
     }
 
-    // Atualizar dados do usuário
+    // Atualizar dados locais
     currentUser.name = nick;
     currentUser.email = email;
     currentUser.bio = bio;
     currentUser.location = location;
 
-    // Salvar alterações
     saveUserSession();
     updateAuthUI();
     updateProfileData();
@@ -536,24 +368,23 @@ function updateProfile() {
 // AUTO-SAVE E PERSISTÊNCIA
 // ===========================================
 
-/**
- * Configura auto-save automático dos dados do usuário
- */
+function saveUserSession() {
+    // Dados já são salvos pelo TokenManager
+    // Esta função mantém compatibilidade com código existente
+    console.log('💾 Sessão salva (via TokenManager)');
+}
+
 function setupAutoSave() {
     if (!currentUser) return;
     
-    // Auto-save a cada minuto se houver usuário logado
     setInterval(() => {
         if (currentUser) {
             saveUserSession();
-            console.log('💾 Auto-save executado para:', currentUser.name);
+            console.log('💾 Auto-save executado');
         }
     }, appConfig.autoSaveInterval);
 }
 
-/**
- * Salva progresso antes de sair da página
- */
 function setupBeforeUnload() {
     window.addEventListener('beforeunload', function(e) {
         if (currentUser) {
@@ -566,19 +397,18 @@ function setupBeforeUnload() {
 // INICIALIZAÇÃO
 // ===========================================
 
-/**
- * Inicializa sistema de autenticação da tela principal
- */
 function initMainAuth() {
     console.log('🔐 Inicializando autenticação da tela principal...');
     
-    // Verificar estado de autenticação
+    // Aguardar AuthService estar disponível
+    if (typeof AuthService === 'undefined') {
+        console.log('⏳ Aguardando AuthService...');
+        setTimeout(initMainAuth, 100);
+        return;
+    }
+    
     checkAuthState();
-    
-    // Configurar auto-save
     setupAutoSave();
-    
-    // Configurar salvamento antes de sair
     setupBeforeUnload();
     
     console.log('✅ Sistema de autenticação inicializado');
@@ -586,12 +416,5 @@ function initMainAuth() {
 
 // Chamar inicialização quando DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
-    // Aguardar um pouco para garantir que outros scripts carregaram
     setTimeout(initMainAuth, 100);
 });
-        
-        
-        if (!currentPass) {
-            showNotification('Digite a senha atual para alterá-la.', 'error');
-            return;
-        }
