@@ -32,5 +32,10 @@ namespace LibraryApp.Infrastructure.Context
         {
             _context.Set<T>().Update(entity);
         }
+
+        public async Task AddRange<T>(List<T> entities) where T : class, IEntity
+        {
+            await _context.Set<T>().AddRangeAsync(entities);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using LibraryApp.Application.Services;
+﻿using LibraryApp.Application.Requests;
+using LibraryApp.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,14 @@ namespace LibraryApp.Api.Controllers
         public BooksController(IBookService bookService)
         {
             _bookService = bookService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBook([FromForm]CreateBookRequest request)
+        {
+            var result = await _bookService.CreateBook(request);
+
+            return Ok(result);
         }
 
         [HttpGet("{id:long}")]

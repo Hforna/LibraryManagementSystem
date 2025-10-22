@@ -10,6 +10,13 @@ public class BookRepository : IBookRepository
 
     public BookRepository(DataContext dataContext) => _context = dataContext;
 
+    public async Task<List<Category>> GetCategories(List<long> categoriesIds)
+    {
+        return await _context.Categories
+            .AsNoTracking()
+            .Where(d => categoriesIds.Contains(d.Id))
+            .ToListAsync();
+    }
 
     public async Task<Book?> GetFullBook(long id)
     {

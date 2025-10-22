@@ -16,9 +16,9 @@ namespace LibraryApp.Application.Responses
         public string Description { get; set; }
         public string FileUrl { get; set; }
         public string CoverUrl { get; set; }
-        public List<string> Categories { get; set; }
-        public int LikesCount { get; set; }
-        public int TotalViews { get; set; }
+        public List<string> Categories { get; set; } = [];
+        public int LikesCount { get; set; } = 0;
+        public int TotalViews { get; set; } = 0;
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
     }
 }
