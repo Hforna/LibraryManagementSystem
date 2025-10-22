@@ -1,10 +1,12 @@
 using LibraryApp.Api.Middlewares;
 using LibraryApp.Application;
 using LibraryApp.Infrastructure;
+using LibraryApp.Infrastructure.Context;
 using LibraryApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -76,6 +78,12 @@ if (app.Environment.IsDevelopment())
     app.UseReDoc(opt => opt.SpecUrl("/openapi/v1.json"));
 
     app.MapScalarApiReference();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+        dbContext.Database.Migrate();
+    }
 }
 
 //Redirect automatically http requests to https requests
