@@ -25,6 +25,7 @@ namespace LibraryApp.Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILoginService, LoginService>();
             services.AddScoped<ITokenAppService, TokenAppService>();
+            services.AddScoped<IBookService, BookService>();
         }
     }
 }

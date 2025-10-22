@@ -17,6 +17,8 @@ namespace LibraryApp.Application
                 .ForMember(d => d.UserName, f => f.MapFrom(d => d.UserName));
 
             CreateMap<User, UserResponse>();
+
+            CreateMap<Book,  BookResponse>();
         }
     }
 }

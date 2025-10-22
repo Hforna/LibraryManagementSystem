@@ -58,7 +58,7 @@ namespace LibraryApp.Application.Services
 
             if (!tokenIsValid.Succeeded)
             {
-                var exception = new AuthenticationException("Token fornecido não é valido");
+                var exception = new UnauthorizedException("Token fornecido não é valido");
                 _logger.LogError(message: $"Token {token} is not valid to email {email}", exception: exception);
                 throw exception;
             }

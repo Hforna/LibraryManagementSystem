@@ -99,8 +99,10 @@ namespace LibraryApp.Infrastructure.Services.Security
         /// <exception cref="RequestException">Lançada quando o token não é fornecido.</exception>
         public Task<User?> GetUserByToken()
         {
-            var token = _requestService.GetBearerToken()
-               ?? throw new RequestException("Token não fornecido na requisição");
+            var token = _requestService.GetBearerToken();
+
+            if (token is null)
+                return null;
 
             var handler = new JwtSecurityTokenHandler();
             var read = handler.ReadJwtToken(token);

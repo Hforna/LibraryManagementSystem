@@ -30,7 +30,7 @@ namespace LibraryApp.Infrastructure.Services.Security
             var token = _httpContext.HttpContext.Request.Headers.Authorization.ToString();
 
             if (string.IsNullOrEmpty(token))
-                return token;
+                return null;
 
             return token["Bearer".Length..].Trim();
         }

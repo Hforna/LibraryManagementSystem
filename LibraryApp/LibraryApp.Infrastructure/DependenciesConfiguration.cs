@@ -48,6 +48,7 @@ namespace LibraryApp.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IGenericRepository, GenericRepository>();
+            services.AddScoped<IBookRepository, BookRepository>();
         }
 
         static void AddServices(IServiceCollection services, IConfiguration configuration)

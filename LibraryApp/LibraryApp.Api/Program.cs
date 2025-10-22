@@ -25,25 +25,25 @@ builder.Services.AddApplication(builder.Configuration);
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("services:smtp"));
 
-//uilder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//AddJwtBearer(jwtOptions =>
-//{
-//    var @params = new TokenValidationParameters
-//    {
-//        ValidateIssuerSigningKey = true,
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("services:jwt:signKey")!)),
-//        ValidateLifetime = true
-//    };
-//    if (!builder.Environment.IsDevelopment())
-//    {
-//        @params.ValidateIssuer = true;
-//        @params.ValidIssuer = builder.Configuration.GetValue<string>("services:jwt:issuer");
-//        @params.ValidateAudience = true;
-//        @params.ValidAudience = builder.Configuration.GetValue<string>("services:jwt:audience");
-//    }
-//
-//    jwtOptions.TokenValidationParameters = @params;
-//});
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(jwtOptions =>
+{
+    var @params = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("services:jwt:signKey")!)),
+        ValidateLifetime = true
+    };
+    if (!builder.Environment.IsDevelopment())
+    {
+        @params.ValidateIssuer = true;
+        @params.ValidIssuer = builder.Configuration.GetValue<string>("services:jwt:issuer");
+        @params.ValidateAudience = true;
+        @params.ValidAudience = builder.Configuration.GetValue<string>("services:jwt:audience");
+    }
+
+    jwtOptions.TokenValidationParameters = @params;
+});
 
 builder.Services.AddAuthentication(opt =>
 {

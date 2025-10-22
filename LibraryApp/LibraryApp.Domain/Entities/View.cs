@@ -14,7 +14,7 @@ namespace LibraryApp.Domain.Entities
         public long Id { get; set; }
 
         [Column("usuario_id")]
-        public long? UserId { get; set; }
+        public long? UserId { get; set; } = null;
         public User User { get; set; }
 
         [Column("livro_id")]

@@ -9,6 +9,7 @@ namespace LibraryApp.Domain.Repositories
     public interface IUnitOfWork
     {
         public IUserRepository UserRepository { get; }
+        public IBookRepository BookRepository { get; }
         public IGenericRepository GenericRepository { get; }
         public Task Commit();
     }

@@ -1,5 +1,6 @@
 ﻿using LibraryApp.Domain.Entities;
 using LibraryApp.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,6 +19,13 @@ namespace LibraryApp.Infrastructure.Context
         public async Task Add<T>(T entity) where T : class, IEntity
         {
             await _context.Set<T>().AddAsync(entity);
+        }
+
+        public async Task<T?> GetById<T>(long id) where T : class, IEntity
+        {
+            return await _context.Set<T>()
+                .AsNoTracking()
+                .SingleOrDefaultAsync(book => book.Id == id);
         }
 
         public void Update<T>(T entity) where T : class, IEntity
