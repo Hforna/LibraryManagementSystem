@@ -17,7 +17,7 @@ namespace LibraryApp.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBook([FromForm]CreateBookRequest request)
+        public async Task<IActionResult> CreateBook([FromForm]BookRequest request)
         {
             var result = await _bookService.CreateBook(request);
 
@@ -25,9 +25,17 @@ namespace LibraryApp.Api.Controllers
         }
 
         [HttpGet("{id:long}")]
-        public async Task<IActionResult> GetBook([FromRoute] long id)
+        public async Task<IActionResult> GetBook([FromRoute]long id)
         {
             var result = await _bookService.GetBook(id);
+
+            return Ok(result);
+        }
+
+        [HttpPut("{id:long]")]
+        public async Task<IActionResult> UpdateBook([FromRoute]long id, [FromBody]UpdateBookRequest request)
+        {
+            var result = await _bookService.UpdateBook(request, id);
 
             return Ok(result);
         }
