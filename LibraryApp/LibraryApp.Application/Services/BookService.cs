@@ -127,7 +127,11 @@ namespace LibraryApp.Application.Services
             var book = await _uow.BookRepository.GetFullBook(id)
                 ?? throw new NotFoundException("Livro não foi encontrado");
 
-            if(!string.IsNullOrEmpty(book.Title))
+            var user = await _tokenService.GetUserByToken();
+            if (book.UserId != user.Id)
+                throw new UnauthorizedException("Usúario não tem permissão para atualizar esse livro");
+
+            if (!string.IsNullOrEmpty(book.Title))
             {
                 var titleExists = await _uow.BookRepository.BookByTitleExists(request.Title);
 

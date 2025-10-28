@@ -18,10 +18,11 @@ namespace LibraryApp.Api.Middlewares
                     RequestException => HttpStatusCode.BadRequest,
                     UnauthorizedException => HttpStatusCode.Unauthorized,
                     NotFoundException => HttpStatusCode.NotFound,
+                    UnexpectedErrorException => HttpStatusCode.InternalServerError,
                     _ => HttpStatusCode.InternalServerError
                 };
 
-                var message = ex.Message;
+                var message = "Error inesperado ocorreu no sistema";
                 if (ex is BaseException be)
                     message = be.GetMessages();
 

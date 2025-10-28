@@ -16,4 +16,17 @@ namespace LibraryApp.Domain.Exceptions
             
         }
     }
+
+    public class UnexpectedErrorException : BaseException
+    {
+        public UnexpectedErrorException(string error) : base(error)
+        {
+
+        }
+
+        public UnexpectedErrorException(List<string> errors) : base(errors)
+        {
+
+        }
+    }
 }

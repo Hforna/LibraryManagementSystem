@@ -12,6 +12,7 @@ namespace LibraryApp.Domain.Services
         public string GenerateRefreshToken();
         public DateTime GetTimeToRefreshExpires();
         public Task<User?> GetUserByToken();
+        public long? GetUserIdByToken();
         public List<Claim> GetTokenClaims();
     }
 }

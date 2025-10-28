@@ -37,5 +37,10 @@ namespace LibraryApp.Infrastructure.Context
         {
             await _context.Set<T>().AddRangeAsync(entities);
         }
+
+        public void DeleteRange<T>(List<T> entities) where T : class, IEntity
+        {
+            _context.Set<T>().RemoveRange(entities);
+        }
     }
 }

@@ -112,6 +112,20 @@ namespace LibraryApp.Infrastructure.Services.Security
             return user;
         }
 
+        public long? GetUserIdByToken()
+        {
+            var token = _requestService.GetBearerToken();
+
+            if (token is null)
+                return null;
+
+            var handler = new JwtSecurityTokenHandler();
+            var read = handler.ReadJwtToken(token);
+            var id = long.Parse(read.Claims.FirstOrDefault(d => d.Type == ClaimTypes.Sid)!.Value);
+
+            return id;
+        }
+
         /// <summary>
         /// Gera a chave de segurança simétrica utilizada na assinatura e validação dos tokens JWT.
         /// </summary>

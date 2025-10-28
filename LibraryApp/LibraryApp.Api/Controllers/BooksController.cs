@@ -1,8 +1,10 @@
-﻿using LibraryApp.Application.Requests;
+﻿using LibraryApp.Api.Filters;
+using LibraryApp.Application.Requests;
 using LibraryApp.Application.Responses;
 using LibraryApp.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Cms;
 
 namespace LibraryApp.Api.Controllers
 {
@@ -99,6 +101,7 @@ namespace LibraryApp.Api.Controllers
         /// Todos os campos na requisição são opcionais. Apenas os campos fornecidos serão atualizados.
         /// </remarks>
         [HttpPut("{id:long}")]
+        [UserAuthenticated]
         [ProducesResponseType(typeof(BookResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -106,6 +109,13 @@ namespace LibraryApp.Api.Controllers
         {
             var result = await _bookService.UpdateBook(request, id);
             return Ok(result);
+        }
+
+        [HttpDelete("{bookId}")]
+        [UserAuthenticated]
+        public async Task<IActionResult> DeleteBook([FromRoute]long bookId)
+        {
+
         }
     }
 }
