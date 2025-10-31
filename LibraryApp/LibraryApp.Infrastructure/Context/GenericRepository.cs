@@ -28,6 +28,11 @@ namespace LibraryApp.Infrastructure.Context
                 .SingleOrDefaultAsync(book => book.Id == id);
         }
 
+        public void Delete<T>(T entity) where T : class, IEntity
+        {
+            _context.Set<T>().Remove(entity);
+        }
+
         public void Update<T>(T entity) where T : class, IEntity
         {
             _context.Set<T>().Update(entity);

@@ -9,6 +9,15 @@ namespace LibraryApp.Domain.Entities
     [Table("comentarios")]
     public class Comment : Entity
     {
+        public Comment(long userId, long bookId, string content)
+        {
+            UserId = userId;
+            BookId = bookId;
+            Content = content;
+        }
+
+        public Comment() { }
+
         [Key]
         [Column("id")]
         public long Id { get; set; }

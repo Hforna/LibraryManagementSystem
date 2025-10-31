@@ -19,6 +19,8 @@ namespace LibraryApp.Application
             CreateMap<User, UserResponse>();
 
             CreateMap<Book,  BookResponse>();
+
+            CreateMap<Comment, CommentResponse>();
         }
     }
 }
