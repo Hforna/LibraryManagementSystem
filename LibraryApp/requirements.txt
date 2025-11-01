@@ -1,0 +1,13 @@
+endpoints:
+GET books/id
+POST books
+DELETE books/id
+PUT books/id
+GET books/filter = create paginated response containing short infos about books
+POST books/id/comments
+DELETE comments/id
+GET books/id/comments = return all comments from a course paginated
+
+
+GET books/id/like
+GET books/id/unlike

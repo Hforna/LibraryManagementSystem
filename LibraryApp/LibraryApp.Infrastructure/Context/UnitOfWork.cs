@@ -12,10 +12,13 @@ namespace LibraryApp.Infrastructure.Context
         public IBookRepository BookRepository { get; }
         public IGenericRepository GenericRepository { get; }
 
-        public UnitOfWork(DataContext context, IUserRepository userRepository, IBookRepository bookRepository, IGenericRepository genericRepository)
+        public ICommentRepository CommentRepository { get; }
+
+        public UnitOfWork(DataContext context, IUserRepository userRepository, IBookRepository bookRepository, IGenericRepository genericRepository, ICommentRepository commentRepository)
         {
             _context = context;
             UserRepository = userRepository;
+            CommentRepository = commentRepository;
             BookRepository = bookRepository;
             GenericRepository = genericRepository;
         }

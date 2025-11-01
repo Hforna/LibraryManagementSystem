@@ -15,6 +15,16 @@ public class BookRepository : IBookRepository
         return await _context.Books.AnyAsync(d => d.Title == title);
     }
 
+    public void DeleteBook(Book book)
+    {
+        _context.Books.Remove(book);
+    }
+
+    public async Task<bool> UserDownloadedBook(long userId, long bookId)
+    {
+        return await _context.Downloads.AnyAsync(d => d.UserId == userId && d.BookId == bookId);
+    }
+
     public async Task<List<Category>> GetCategories(List<long> categoriesIds)
     {
         return await _context.Categories

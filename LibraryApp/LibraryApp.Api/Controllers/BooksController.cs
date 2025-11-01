@@ -8,22 +8,17 @@ using Org.BouncyCastle.Asn1.Cms;
 
 namespace LibraryApp.Api.Controllers
 {
-    /// <summary>
-    /// Controller responsável por gerenciar operações de livros no sistema de biblioteca.
-    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class BooksController : ControllerBase
     {
         private readonly IBookService _bookService;
+        private readonly ICommentService _commentService;
 
-        /// <summary>
-        /// Inicializa uma nova instância da classe <see cref="BooksController"/>.
-        /// </summary>
-        /// <param name="bookService">O serviço de livros para manipular operações de livros.</param>
-        public BooksController(IBookService bookService)
+        public BooksController(IBookService bookService, ICommentService commentService)
         {
             _bookService = bookService;
+            _commentService = commentService;
         }
 
         /// <summary>
@@ -74,6 +69,7 @@ namespace LibraryApp.Api.Controllers
         public async Task<IActionResult> GetBook([FromRoute] long id)
         {
             var result = await _bookService.GetBook(id);
+
             return Ok(result);
         }
 
@@ -105,17 +101,36 @@ namespace LibraryApp.Api.Controllers
         [ProducesResponseType(typeof(BookResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateBook([FromRoute] long id, [FromBody] UpdateBookRequest request)
+        public async Task<IActionResult> UpdateBook([FromRoute] long id, [FromForm] UpdateBookRequest request)
         {
             var result = await _bookService.UpdateBook(request, id);
             return Ok(result);
         }
 
-        [HttpDelete("{bookId}")]
+        [HttpDelete("{bookId:long}")]
         [UserAuthenticated]
-        public async Task<IActionResult> DeleteBook([FromRoute]long bookId)
+        public async Task<IActionResult> DeleteBook([FromRoute] long bookId)
         {
+            await _bookService.DeleteBook(bookId);
 
+            return NoContent();
+        }
+
+        [HttpGet("{bookId}/comments")]
+        public async Task<IActionResult> GetCommentsPaginated([FromRoute] long bookId, [FromQuery] int page, [FromQuery] int perPage)
+        {
+            var result = await _commentService.GetComments(bookId, page, perPage);
+
+            return Ok(result);
+        }
+
+        [HttpPost("{bookId}/comments/")]
+        [UserAuthenticated]
+        public async Task<IActionResult> PublishComment([FromBody] CommentRequest request, [FromRoute] long bookId)
+        {
+            var result = await _commentService.CreateComment(request, bookId);
+
+            return Ok(result);
         }
     }
 }

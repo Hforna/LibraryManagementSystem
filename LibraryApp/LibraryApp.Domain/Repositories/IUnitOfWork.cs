@@ -11,6 +11,7 @@ namespace LibraryApp.Domain.Repositories
         public IUserRepository UserRepository { get; }
         public IBookRepository BookRepository { get; }
         public IGenericRepository GenericRepository { get; }
+        public ICommentRepository CommentRepository { get; }
         public Task Commit();
     }
 }

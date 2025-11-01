@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="requirements.txt" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/LibraryApp.UnitTests/LibraryApp.UnitTests.csproj" />
   </Folder>

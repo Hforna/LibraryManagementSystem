@@ -2,6 +2,7 @@
 using LibraryApp.Application.Requests;
 using LibraryApp.Application.Responses;
 using LibraryApp.Domain.Entities;
+using Pagination.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,6 +22,8 @@ namespace LibraryApp.Application
             CreateMap<Book,  BookResponse>();
 
             CreateMap<Comment, CommentResponse>();
+
+            CreateMap<Pagination<Comment>, CommentsPaginatedResponse>();
         }
     }
 }

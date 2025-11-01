@@ -12,6 +12,11 @@ namespace LibraryApp.Infrastructure.Services
             throw new NotImplementedException();
         }
 
+        public Task DeleteFile(string fileName, string bookName)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task UploadFile(Stream file, string fileName)
         {
             throw new NotImplementedException();

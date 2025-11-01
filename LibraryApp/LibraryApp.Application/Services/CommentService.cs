@@ -13,6 +13,7 @@ public interface ICommentService
 {
     public Task<CommentResponse> CreateComment(CommentRequest request, long bookId);
     public Task DeleteComment(long id);
+    public Task<CommentsPaginatedResponse> GetComments(long bookId, int page, int perPage);
 }
 
 public class CommentService : ICommentService
@@ -61,5 +62,19 @@ public class CommentService : ICommentService
         
         _uow.GenericRepository.Delete<Comment>(comment);
         await _uow.Commit();
+    }
+
+    public async Task<CommentsPaginatedResponse> GetComments(long bookId, int page, int perPage)
+    {
+        var book = await _uow.GenericRepository.GetById<Book>(bookId) 
+                    ?? throw new NotFoundException("Livro não foi encontrado");
+
+        var comments = await _uow.CommentRepository.GetComments(bookId, page, perPage);
+
+        var response = new CommentsPaginatedResponse() 
+                        { Comments = comments.Results.Select(comment => _mapper.Map<CommentResponse>(comment)).ToList() };
+        _mapper.Map(comments, response);
+
+        return response;
     }
 }

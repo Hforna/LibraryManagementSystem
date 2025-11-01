@@ -15,6 +15,7 @@ namespace LibraryApp.Application.Services
         public Task<BookResponse> GetBook(long id);
         public Task<BookResponse> CreateBook(BookRequest request);
         public Task<BookResponse> UpdateBook(UpdateBookRequest request, long id);
+        public Task DeleteBook(long bookId);
     }
 
     public class BookService : IBookService
@@ -190,6 +191,24 @@ namespace LibraryApp.Application.Services
             response.FileUrl = await _storageService.GetFileUrl(book.FileName, book.Title);
 
             return response;
+        }
+
+        public async Task DeleteBook(long bookId)
+        {
+            var user = await _tokenService.GetUserByToken();
+       
+            var book = await _uow.GenericRepository.GetById<Book>(bookId) 
+                       ?? throw new NotFoundException("Livro não foi encontrado");
+            
+            if (book.UserId != book.Id)
+                throw new UnauthorizedException("Usuario não tem permissão para deletar livro");
+
+            await _storageService.DeleteFile(book.FileName, book.Title);
+            if(!string.IsNullOrEmpty(book.CoverName)) 
+                await _storageService.DeleteFile(book.CoverName, book.Title);
+            
+            _uow.BookRepository.DeleteBook(book);
+            await _uow.Commit();
         }
     }
 }

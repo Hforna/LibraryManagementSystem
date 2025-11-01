@@ -8,5 +8,6 @@ namespace LibraryApp.Domain.Services
     {
         public Task UploadFile(Stream file,  string fileName);
         public Task<string> GetFileUrl(string fileName, string bookName);
+        public Task DeleteFile(string fileName, string bookName);
     }
 }
