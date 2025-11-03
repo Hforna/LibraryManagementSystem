@@ -9,4 +9,6 @@ public interface IBookRepository
     public Task<bool> BookByTitleExists(string title);
     public void DeleteBook(Book book);
     public Task<bool> UserDownloadedBook(long userId, long bookId);
+    public Task<bool> UserLikedBook(long userId, long bookId);
+    public Task<Like?> GetLikeByUserAndBook(long userId, long bookId);
 }

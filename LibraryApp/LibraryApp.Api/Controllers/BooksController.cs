@@ -132,5 +132,22 @@ namespace LibraryApp.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("{bookId}/like")]
+        [UserAuthenticated]
+        public async Task<IActionResult> LikeBook([FromRoute]long bookId)
+        {
+            await _bookService.LikeBook(bookId);
+
+            return Ok();
+        }
+
+        [HttpGet("{bookId}/unlike")]
+        public async Task<IActionResult> UnlikeBook([FromRoute]long bookId)
+        {
+            await _bookService.UnlikeBook(bookId);
+
+            return Ok();
+        }
     }
 }

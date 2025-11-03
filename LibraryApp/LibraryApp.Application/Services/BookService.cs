@@ -16,6 +16,8 @@ namespace LibraryApp.Application.Services
         public Task<BookResponse> CreateBook(BookRequest request);
         public Task<BookResponse> UpdateBook(UpdateBookRequest request, long id);
         public Task DeleteBook(long bookId);
+        public Task LikeBook(long bookId);
+        public Task UnlikeBook(long bookId);
     }
 
     public class BookService : IBookService
@@ -208,6 +210,46 @@ namespace LibraryApp.Application.Services
                 await _storageService.DeleteFile(book.CoverName, book.Title);
             
             _uow.BookRepository.DeleteBook(book);
+            await _uow.Commit();
+        }
+
+        public async Task LikeBook(long bookId)
+        {
+            var user = await _tokenService.GetUserByToken();
+
+            var book = await _uow.GenericRepository.GetById<Book>(bookId)
+                       ?? throw new NotFoundException("Livro não foi encontrado");
+
+            var userLiked = await _uow.BookRepository.UserLikedBook(user.Id, bookId);
+
+            if (userLiked)
+                throw new RequestException("Usuário ja curtiu esse livro");
+
+            var like = new Like()
+            {
+                UserId = user.Id,
+                BookId = bookId
+            };
+
+            await _uow.GenericRepository.Add<Like>(like);
+            await _uow.Commit();
+        }
+
+        public async Task UnlikeBook(long bookId)
+        {
+            var user = await _tokenService.GetUserByToken();
+
+            var book = await _uow.GenericRepository.GetById<Book>(bookId)
+                       ?? throw new NotFoundException("Livro não foi encontrado");
+
+            var userLiked = await _uow.BookRepository.UserLikedBook(user.Id, bookId);
+
+            if (!userLiked)
+                throw new RequestException("Usuário ainda não curtiu esse livro");
+
+            var like = await _uow.BookRepository.GetLikeByUserAndBook(user.Id, book.Id);
+
+            _uow.GenericRepository.Delete<Like>(like);
             await _uow.Commit();
         }
     }

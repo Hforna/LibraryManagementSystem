@@ -43,4 +43,17 @@ public class BookRepository : IBookRepository
             .Include(d => d.Views)
             .SingleOrDefaultAsync(d => d.Id == id);
     }
+
+    public async Task<bool> UserLikedBook(long userId, long bookId)
+    {
+        return await _context
+            .Likes
+            .AnyAsync(d => d.UserId == userId && d.BookId == bookId);
+    }
+
+    public async Task<Like?> GetLikeByUserAndBook(long userId, long bookId)
+    {
+        return await _context.Likes
+            .SingleOrDefaultAsync(d => d.UserId == userId && d.BookId == bookId);
+    }
 }
