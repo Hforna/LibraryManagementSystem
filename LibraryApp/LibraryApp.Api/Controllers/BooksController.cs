@@ -107,46 +107,154 @@ namespace LibraryApp.Api.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Deleta um livro do sistema de biblioteca.
+        /// </summary>
+        /// <param name="bookId">O identificador único do livro a ser deletado.</param>
+        /// <returns>Uma resposta 204 No Content se a operação for bem-sucedida.</returns>
+        /// <response code="204">O livro foi deletado com sucesso.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
+        /// <response code="403">Se o usuário não tiver permissão para deletar o livro (não é o proprietário).</response>
+        /// <response code="404">Se o livro com o ID especificado não for encontrado.</response>
+        /// <remarks>
+        /// Exemplo de requisição:
+        /// 
+        ///     DELETE /api/books/1
+        ///     Authorization: Bearer {token}
+        /// 
+        /// Apenas o usuário que criou o livro pode deletá-lo.
+        /// Ao deletar o livro, o arquivo e a capa também serão removidos do armazenamento.
+        /// </remarks>
         [HttpDelete("{bookId:long}")]
         [UserAuthenticated]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteBook([FromRoute] long bookId)
         {
             await _bookService.DeleteBook(bookId);
-
             return NoContent();
         }
 
+        /// <summary>
+        /// Recupera os comentários de um livro de forma paginada.
+        /// </summary>
+        /// <param name="bookId">O identificador único do livro.</param>
+        /// <param name="page">O número da página a ser recuperada (começa em 1).</param>
+        /// <param name="perPage">A quantidade de comentários por página.</param>
+        /// <returns>Um <see cref="CommentsPaginatedResponse"/> contendo os comentários paginados.</returns>
+        /// <response code="200">Retorna a lista paginada de comentários.</response>
+        /// <response code="404">Se o livro com o ID especificado não for encontrado.</response>
+        /// <remarks>
+        /// Exemplo de requisição:
+        /// 
+        ///     GET /api/books/1/comments?page=1&amp;perPage=10
+        /// 
+        /// A resposta inclui informações de paginação como página atual, total de páginas,
+        /// e se há páginas anteriores ou próximas disponíveis.
+        /// </remarks>
         [HttpGet("{bookId}/comments")]
+        [ProducesResponseType(typeof(CommentsPaginatedResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetCommentsPaginated([FromRoute] long bookId, [FromQuery] int page, [FromQuery] int perPage)
         {
             var result = await _commentService.GetComments(bookId, page, perPage);
-
             return Ok(result);
         }
 
-        [HttpPost("{bookId}/comments/")]
+        /// <summary>
+        /// Publica um novo comentário em um livro.
+        /// </summary>
+        /// <param name="request">A requisição contendo o texto do comentário (máximo 500 caracteres).</param>
+        /// <param name="bookId">O identificador único do livro onde o comentário será publicado.</param>
+        /// <returns>Um <see cref="CommentResponse"/> contendo os detalhes do comentário criado.</returns>
+        /// <response code="200">Retorna o comentário recém-criado.</response>
+        /// <response code="400">Se a validação da requisição falhar (ex: texto excede 500 caracteres).</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
+        /// <response code="404">Se o livro com o ID especificado não for encontrado.</response>
+        /// <remarks>
+        /// Exemplo de requisição:
+        /// 
+        ///     POST /api/books/1/comments
+        ///     Authorization: Bearer {token}
+        ///     Content-Type: application/json
+        ///     
+        ///     {
+        ///         "text": "Excelente livro! Recomendo a todos."
+        ///     }
+        /// 
+        /// O usuário deve estar autenticado para publicar um comentário.
+        /// </remarks>
+        [HttpPost("{bookId}/comments")]
         [UserAuthenticated]
+        [ProducesResponseType(typeof(CommentResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PublishComment([FromBody] CommentRequest request, [FromRoute] long bookId)
         {
             var result = await _commentService.CreateComment(request, bookId);
-
             return Ok(result);
         }
 
-        [HttpGet("{bookId}/like")]
+        /// <summary>
+        /// Adiciona uma curtida (like) a um livro.
+        /// </summary>
+        /// <param name="bookId">O identificador único do livro a ser curtido.</param>
+        /// <returns>Uma resposta 200 OK se a operação for bem-sucedida.</returns>
+        /// <response code="200">O livro foi curtido com sucesso.</response>
+        /// <response code="400">Se o usuário já curtiu este livro anteriormente.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
+        /// <response code="404">Se o livro com o ID especificado não for encontrado.</response>
+        /// <remarks>
+        /// Exemplo de requisição:
+        /// 
+        ///     POST /api/books/1/like
+        ///     Authorization: Bearer {token}
+        /// 
+        /// Um usuário só pode curtir um livro uma vez. Tentativas de curtir novamente
+        /// retornarão um erro 400.
+        /// </remarks>
+        [HttpPost("{bookId}/like")]
         [UserAuthenticated]
-        public async Task<IActionResult> LikeBook([FromRoute]long bookId)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> LikeBook([FromRoute] long bookId)
         {
             await _bookService.LikeBook(bookId);
-
             return Ok();
         }
 
-        [HttpGet("{bookId}/unlike")]
-        public async Task<IActionResult> UnlikeBook([FromRoute]long bookId)
+        /// <summary>
+        /// Remove uma curtida (like) de um livro.
+        /// </summary>
+        /// <param name="bookId">O identificador único do livro a ter a curtida removida.</param>
+        /// <returns>Uma resposta 200 OK se a operação for bem-sucedida.</returns>
+        /// <response code="200">A curtida foi removida com sucesso.</response>
+        /// <response code="400">Se o usuário ainda não curtiu este livro.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
+        /// <response code="404">Se o livro com o ID especificado não for encontrado.</response>
+        /// <remarks>
+        /// Exemplo de requisição:
+        /// 
+        ///     DELETE /api/books/1/unlike
+        ///     Authorization: Bearer {token}
+        /// 
+        /// O usuário só pode remover curtidas de livros que ele já curtiu anteriormente.
+        /// Tentativas de remover uma curtida inexistente retornarão um erro 400.
+        /// </remarks>
+        [HttpDelete("{bookId}/unlike")]
+        [UserAuthenticated]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UnlikeBook([FromRoute] long bookId)
         {
             await _bookService.UnlikeBook(bookId);
-
             return Ok();
         }
     }

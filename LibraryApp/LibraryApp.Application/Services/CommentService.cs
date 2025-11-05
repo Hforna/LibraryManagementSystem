@@ -14,6 +14,7 @@ public interface ICommentService
     public Task<CommentResponse> CreateComment(CommentRequest request, long bookId);
     public Task DeleteComment(long id);
     public Task<CommentsPaginatedResponse> GetComments(long bookId, int page, int perPage);
+    public Task<CommentResponse> GetCommentById(long id);
 }
 
 public class CommentService : ICommentService
@@ -62,6 +63,14 @@ public class CommentService : ICommentService
         
         _uow.GenericRepository.Delete<Comment>(comment);
         await _uow.Commit();
+    }
+
+    public async Task<CommentResponse> GetCommentById(long id)
+    {
+        var comment = await _uow.GenericRepository.GetById<Comment>(id) 
+            ?? throw new NotFoundException("Comentario não foi achado");
+
+        return _mapper.Map<CommentResponse>(comment);
     }
 
     public async Task<CommentsPaginatedResponse> GetComments(long bookId, int page, int perPage)

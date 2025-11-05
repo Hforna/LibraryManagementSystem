@@ -91,9 +91,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 
-app.UseAuthorization();
-
 app.UseCors("allowAny");
+
+app.UseAuthorization();
 
 app.UseMiddleware<GlobalExceptionHandler>();
 

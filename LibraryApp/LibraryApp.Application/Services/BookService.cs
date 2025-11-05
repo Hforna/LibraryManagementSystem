@@ -202,7 +202,7 @@ namespace LibraryApp.Application.Services
             var book = await _uow.GenericRepository.GetById<Book>(bookId) 
                        ?? throw new NotFoundException("Livro não foi encontrado");
             
-            if (book.UserId != book.Id)
+            if (book.UserId != user.Id)
                 throw new UnauthorizedException("Usuario não tem permissão para deletar livro");
 
             await _storageService.DeleteFile(book.FileName, book.Title);
