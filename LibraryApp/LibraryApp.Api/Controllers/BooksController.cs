@@ -30,7 +30,7 @@ namespace LibraryApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateBook([FromForm] BookRequest request)
         {
-            var result = await _bookService.CreateBook(request);
+             var result = await _bookService.CreateBook(request);
             return Ok(result);
         }
 
@@ -67,7 +67,13 @@ namespace LibraryApp.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetBooksPaginated([FromQuery]int page, [FromQuery]int perPage)
+        {
+            var result = await _bookService.GetBooksPaginated(page, perPage);
 
+            return Ok(result);
+        }
 
         /// <summary>
         /// Deleta um livro do sistema de biblioteca.

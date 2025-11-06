@@ -7,9 +7,9 @@ namespace LibraryApp.Infrastructure.Services
 {
     public class GoogleStorageService : IStorageService
     {
-        public Task<string> GetFileUrl(string fileName, string bookName)
+        public async Task<string> GetFileUrl(string fileName, string bookName)
         {
-            throw new NotImplementedException();
+            return "";
         }
 
         public Task DeleteFile(string fileName, string bookName)
@@ -17,9 +17,9 @@ namespace LibraryApp.Infrastructure.Services
             throw new NotImplementedException();
         }
 
-        public Task UploadFile(Stream file, string fileName)
+        public async Task UploadFile(Stream file, string fileName)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

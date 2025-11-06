@@ -15,7 +15,7 @@ namespace LibraryApp.Application.Services
         public Task<BookResponse> GetBook(long id);
         public Task<BookResponse> CreateBook(BookRequest request);
         public Task<BookResponse> UpdateBook(UpdateBookRequest request, long id);
-        //public Task<Book>
+        public Task<BooksPaginatedResponse> GetBooksPaginated(int page, int perPage);
         public Task DeleteBook(long bookId);
         public Task LikeBook(long bookId);
         public Task UnlikeBook(long bookId);
@@ -120,7 +120,7 @@ namespace LibraryApp.Application.Services
             response.LikesCount = book.Likes.Count;
             response.Categories = book.BookCategories.Select(d => d.Category.Name).ToList();
             response.TotalViews = book.Views.Count;
-            response.CoverUrl = await _storageService.GetFileUrl(book.CoverName, book.Title);
+            response.CoverUrl = string.IsNullOrEmpty(book.CoverName) ? "" : await _storageService.GetFileUrl(book.CoverName, book.Title);
             response.FileUrl = await _storageService.GetFileUrl(book.FileName, book.Title);
 
             return response;
@@ -190,7 +190,7 @@ namespace LibraryApp.Application.Services
             response.LikesCount = book.Likes.Count;
             response.Categories = book.BookCategories.Select(d => d.Category.Name).ToList();
             response.TotalViews = book.Views.Count;
-            response.CoverUrl = await _storageService.GetFileUrl(book.CoverName, book.Title);
+            response.CoverUrl = string.IsNullOrEmpty(book.CoverName) ? "" : await _storageService.GetFileUrl(book.CoverName, book.Title);
             response.FileUrl = await _storageService.GetFileUrl(book.FileName, book.Title);
 
             return response;
@@ -252,6 +252,16 @@ namespace LibraryApp.Application.Services
 
             _uow.GenericRepository.Delete<Like>(like);
             await _uow.Commit();
+        }
+
+        public async Task<BooksPaginatedResponse> GetBooksPaginated(int page, int perPage)
+        {
+            var books = await _uow.BookRepository.GetBooksPaginated(page, perPage);
+
+            var response = _mapper.Map<BooksPaginatedResponse>(books);
+            response.Books = books.Results.Select(book => _mapper.Map<BookShortResponse>(book)).ToList();
+
+            return response;
         }
     }
 }

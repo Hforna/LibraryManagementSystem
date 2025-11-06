@@ -1,6 +1,7 @@
 ﻿using LibraryApp.Domain.Entities;
 using LibraryApp.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Pagination.EntityFrameworkCore.Extensions;
 
 namespace LibraryApp.Infrastructure.Context;
 
@@ -55,5 +56,12 @@ public class BookRepository : IBookRepository
     {
         return await _context.Likes
             .SingleOrDefaultAsync(d => d.UserId == userId && d.BookId == bookId);
+    }
+
+    public async Task<Pagination<Book>> GetBooksPaginated(int page, int perPage)
+    {
+        return await _context.Books
+            .AsNoTracking()
+            .AsPaginationAsync(page, perPage);
     }
 }

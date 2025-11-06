@@ -19,11 +19,17 @@ namespace LibraryApp.Application
 
             CreateMap<User, UserResponse>();
 
+            CreateMap<BookRequest, Book>();
+
             CreateMap<Book,  BookResponse>();
 
             CreateMap<Comment, CommentResponse>();
 
             CreateMap<Pagination<Comment>, CommentsPaginatedResponse>();
+
+            CreateMap<Pagination<Book>, BooksPaginatedResponse>();
+
+            CreateMap<Book, BookShortResponse>();
         }
     }
 }

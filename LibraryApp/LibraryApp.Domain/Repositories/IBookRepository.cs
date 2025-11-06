@@ -1,4 +1,6 @@
 ﻿using LibraryApp.Domain.Entities;
+using Pagination.EntityFrameworkCore;
+using Pagination.EntityFrameworkCore.Extensions;
 
 namespace LibraryApp.Domain.Repositories;
 
@@ -11,4 +13,5 @@ public interface IBookRepository
     public Task<bool> UserDownloadedBook(long userId, long bookId);
     public Task<bool> UserLikedBook(long userId, long bookId);
     public Task<Like?> GetLikeByUserAndBook(long userId, long bookId);
+    public Task<Pagination<Book>> GetBooksPaginated(int page, int perPage);
 }
