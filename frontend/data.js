@@ -1,250 +1,8 @@
 /*
- * BIBLIOTECA VIRTUAL - DADOS E CONFIGURAÇÕES
- * Arquivo responsável por armazenar todos os dados da aplicação
- * Inclui: livros, categorias, usuários e configurações gerais
+ * BIBLIOTECA VIRTUAL - CONFIGURAÇÕES E UTILITÁRIOS
+ * Arquivo responsável por configurações da aplicação e funções auxiliares
+ * Integrado com API .NET em https://localhost:5001
  */
-
-// ===========================================
-// VARIÁVEIS GLOBAIS DA APLICAÇÃO
-// ===========================================
-
-let books = []; // Array principal de livros
-let favorites = new Set(); // Set de livros favoritos do usuário
-let currentlyReading = new Set(); // Set de livros sendo lidos
-let currentFontSize = 16; // Tamanho da fonte no leitor
-let nightMode = false; // Modo noturno do leitor
-let currentUser = null; // Dados do usuário logado
-
-// Estatísticas do usuário logado
-let userStats = {
-    booksRead: 0,          // Livros lidos completamente
-    readingTime: 0,        // Tempo total de leitura em horas
-    contributions: 0,      // Livros contribuídos pelo usuário
-    yearlyGoal: 12        // Meta anual de livros
-};
-
-// ===========================================
-// BANCO DE DADOS SIMULADO DE USUÁRIOS
-// ===========================================
-
-let usersDatabase = [
-    { 
-        nick: 'admin', 
-        email: 'admin@biblioteca.com', 
-        password: '123456', 
-        joinDate: 'Dezembro 2024' 
-    },
-    { 
-        nick: 'leitor01', 
-        email: 'leitor@email.com', 
-        password: 'senha123', 
-        joinDate: 'Janeiro 2025' 
-    },
-    { 
-        nick: 'bookworm', 
-        email: 'bookworm@gmail.com', 
-        password: 'livros2025', 
-        joinDate: 'Janeiro 2025' 
-    }
-];
-
-// ===========================================
-// DADOS DOS LIVROS DE EXEMPLO
-// ===========================================
-
-const sampleBooks = [
-    {
-        id: 1,
-        title: "Dom Casmurro",
-        author: "Machado de Assis",
-        category: "Literatura",
-        icon: "📖",
-        description: "Clássico da literatura brasileira que narra a história de Bentinho e Capitu",
-        content: `
-            <h3>Capítulo I - Do título</h3>
-            <p>Uma noite destas, vindo da cidade para o Engenho Novo, encontrei no trem da Central um rapaz aqui do bairro, que eu conheço de vista e de chapéu. Cumprimentou-me, sentou-se ao pé de mim, falou da lua e dos ministros, e por fim deu-me parte de que ia casar.</p>
-            
-            <p>— Naturalmente com uma mocinha bonita, disse eu.</p>
-            
-            <p>— Bonita e moça, respondeu ele; mas não é isso só. É também muito sabida. Lê Victor Hugo no original.</p>
-            
-            <p>Este é o conteúdo simulado do famoso romance de Machado de Assis, considerado uma das maiores obras da literatura brasileira. A história é narrada por Bento Santiago, que relembra sua juventude e seu amor por Capitu...</p>
-        `
-    },
-    {
-        id: 2,
-        title: "O Cortiço",
-        author: "Aluísio Azevedo",
-        category: "Literatura",
-        icon: "🏘️",
-        description: "Romance naturalista que retrata a vida em um cortiço no Rio de Janeiro",
-        content: `
-            <h3>Capítulo I</h3>
-            <p>João Romão foi, dos treze aos vinte e cinco anos, empregado de um vendeiro que enriqueceu entre as quatro paredes de uma suja e obscura taverna nos refolhos do bairro do Botafogo; e tanto economizou do pouco que ganhava e tanto se estreitou, que, ao cabo de um tempo, achou-se com alguns mil cruzeiros...</p>
-            
-            <p>Este romance naturalista brasileiro apresenta um retrato fiel da sociedade do século XIX, mostrando as condições de vida das classes populares através da história de um cortiço...</p>
-        `
-    },
-    {
-        id: 3,
-        title: "Física Quântica para Iniciantes",
-        author: "Diversos Autores",
-        category: "Ciência",
-        icon: "⚛️",
-        description: "Introdução aos conceitos fundamentais da mecânica quântica",
-        content: `
-            <h3>Capítulo 1 - Introdução à Física Quântica</h3>
-            <p>A física quântica é um dos ramos mais fascinantes e revolucionários da física moderna. Desenvolvida no início do século XX, ela descreve o comportamento da matéria e da energia em escalas atômicas e subatômicas.</p>
-            
-            <h4>Princípios Fundamentais:</h4>
-            <ul>
-                <li><strong>Quantização da Energia:</strong> A energia não é contínua, mas vem em "pacotes" discretos chamados quanta.</li>
-                <li><strong>Dualidade Onda-Partícula:</strong> Partículas podem exibir propriedades tanto de onda quanto de partícula.</li>
-                <li><strong>Princípio da Incerteza:</strong> Não é possível determinar simultaneamente a posição e o momento de uma partícula com precisão absoluta.</li>
-            </ul>
-            
-            <p>Este livro irá guiá-lo através dos conceitos fundamentais de forma acessível e didática...</p>
-        `
-    },
-    {
-        id: 4,
-        title: "História do Brasil",
-        author: "Boris Fausto",
-        category: "História",
-        icon: "🇧🇷",
-        description: "Panorama completo da história brasileira desde o descobrimento",
-        content: `
-            <h3>Capítulo 1 - O Descobrimento do Brasil</h3>
-            <p>Em 22 de abril de 1500, a esquadra comandada por Pedro Álvares Cabral avistou terras que mais tarde seriam conhecidas como Brasil. Este momento marca o início de uma nova era na história do continente americano.</p>
-            
-            <h4>Os Primeiros Contatos:</h4>
-            <p>Os portugueses encontraram uma terra habitada por diversos povos indígenas, cada um com suas próprias culturas, línguas e tradições. O primeiro contato foi marcado tanto pela curiosidade mútua quanto por mal-entendidos culturais.</p>
-            
-            <p>A colonização que se seguiu transformaria profundamente tanto a terra quanto seus habitantes originais...</p>
-        `
-    },
-    {
-        id: 5,
-        title: "Meditações",
-        author: "Marco Aurélio",
-        category: "Filosofia",
-        icon: "🧘",
-        description: "Reflexões filosóficas do imperador romano sobre estoicismo e vida",
-        content: `
-            <h3>Livro Primeiro</h3>
-            <p><em>1.</em> De meu avô Vero aprendi a bondade e a serenidade de temperamento.</p>
-            
-            <p><em>2.</em> Da reputação e memória de meu pai, aprendi a modéstia e a força de caráter.</p>
-            
-            <p><em>3.</em> De minha mãe, aprendi a piedade, a generosidade e a abstenção não apenas de fazer mal, mas até mesmo de ter pensamentos maus...</p>
-            
-            <h4>Sobre a Vida e a Morte:</h4>
-            <p>"Lembra-te constantemente de quantos médicos morreram depois de muitas vezes franzir o cenho sobre os doentes; quantos astrólogos depois de predizer com grande pompa a morte de outros..."</p>
-            
-            <p>Estas reflexões pessoais do imperador filósofo oferecem insights atemporais sobre como viver uma vida virtuosa...</p>
-        `
-    },
-    {
-        id: 6,
-        title: "JavaScript Moderno",
-        author: "Comunidade Dev",
-        category: "Tecnologia",
-        icon: "💻",
-        description: "Guia completo de JavaScript ES6+ e programação moderna",
-        content: `
-            <h3>Capítulo 1 - Introdução ao JavaScript Moderno</h3>
-            <p>JavaScript é uma das linguagens de programação mais populares e versáteis do mundo. Com o advento do ES6 (ECMAScript 2015) e versões posteriores, a linguagem ganhou recursos poderosos que a tornaram ainda mais expressiva e eficiente.</p>
-            
-            <h4>Novos Recursos do ES6+:</h4>
-            <pre><code>
-// Arrow Functions
-const soma = (a, b) => a + b;
-
-// Destructuring
-const { nome, idade } = pessoa;
-
-// Template Literals
-const mensagem = \`Olá, \${nome}! Você tem \${idade} anos.\`;
-
-// Promises e Async/Await
-const dados = await fetch('/api/dados');
-            </code></pre>
-            
-            <p>Este guia aborda desde conceitos básicos até técnicas avançadas de programação JavaScript...</p>
-        `
-    }
-];
-
-// ===========================================
-// CONFIGURAÇÕES DAS CATEGORIAS
-// ===========================================
-
-const categories = [
-    { 
-        name: "Literatura", 
-        icon: "📚", 
-        count: 324,
-        color: "#e74c3c"
-    },
-    { 
-        name: "Ciência", 
-        icon: "🔬", 
-        count: 156,
-        color: "#3498db"
-    },
-    { 
-        name: "História", 
-        icon: "📜", 
-        count: 289,
-        color: "#f39c12"
-    },
-    { 
-        name: "Filosofia", 
-        icon: "🤔", 
-        count: 145,
-        color: "#9b59b6"
-    },
-    { 
-        name: "Tecnologia", 
-        icon: "💻", 
-        count: 98,
-        color: "#1abc9c"
-    },
-    { 
-        name: "Autoajuda", 
-        icon: "🌟", 
-        count: 67,
-        color: "#f1c40f"
-    },
-    { 
-        name: "Biografia", 
-        icon: "👤", 
-        count: 89,
-        color: "#34495e"
-    },
-    { 
-        name: "Ficção", 
-        icon: "🌌", 
-        count: 234,
-        color: "#e67e22"
-    }
-];
-
-// ===========================================
-// MAPEAMENTO DE ÍCONES POR CATEGORIA
-// ===========================================
-
-const categoryIcons = {
-    'literatura': '📚',
-    'ciencia': '🔬',
-    'historia': '📜',
-    'filosofia': '🤔',
-    'tecnologia': '💻',
-    'autoajuda': '🌟',
-    'biografia': '👤',
-    'ficcao': '🌌',
-    'default': '📖'
-};
 
 // ===========================================
 // CONFIGURAÇÕES GERAIS DA APLICAÇÃO
@@ -252,7 +10,7 @@ const categoryIcons = {
 
 const appConfig = {
     name: "BiblioLivre",
-    version: "1.0.0",
+    version: "2.0.0",
     description: "Biblioteca Digital Gratuita",
     maxFileSize: 50 * 1024 * 1024, // 50MB em bytes
     supportedFormats: ['.pdf', '.epub', '.txt', '.mobi'],
@@ -286,12 +44,44 @@ const messages = {
         emailTaken: "Este e-mail já está cadastrado.",
         loginRequired: "Por favor, faça login para acessar este recurso.",
         fileTooBig: "O arquivo é muito grande. Tamanho máximo: 50MB.",
-        invalidFormat: "Formato de arquivo não suportado."
+        invalidFormat: "Formato de arquivo não suportado.",
+        networkError: "Erro de conexão. Verifique sua internet.",
+        serverError: "Erro no servidor. Tente novamente mais tarde.",
+        unauthorized: "Sessão expirada. Faça login novamente.",
+        notFound: "Recurso não encontrado."
     }
 };
 
 // ===========================================
-// FUNÇÕES UTILITÁRIAS PARA DADOS
+// ÍCONES DE CATEGORIAS (FALLBACK)
+// ===========================================
+
+const categoryIcons = {
+    'literatura': '📚',
+    'ficção': '📖',
+    'não-ficção': '📝',
+    'ciência': '🔬',
+    'história': '📜',
+    'filosofia': '🤔',
+    'tecnologia': '💻',
+    'autoajuda': '🌟',
+    'biografia': '👤',
+    'romance': '❤️',
+    'suspense': '🔍',
+    'fantasia': '🐉',
+    'técnico': '🛠️',
+    'educação': '🎓',
+    'negócios': '💼',
+    'arte': '🎨',
+    'música': '🎵',
+    'esportes': '⚽',
+    'culinária': '🍳',
+    'viagem': '✈️',
+    'default': '📖'
+};
+
+// ===========================================
+// FUNÇÕES UTILITÁRIAS
 // ===========================================
 
 /**
@@ -300,15 +90,19 @@ const messages = {
  * @returns {string} Ícone da categoria
  */
 function getCategoryIcon(category) {
-    return categoryIcons[category.toLowerCase()] || categoryIcons.default;
+    if (!category) return categoryIcons.default;
+    const normalized = category.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
+    return categoryIcons[normalized] || categoryIcons.default;
 }
 
 /**
- * Gera um ID único para novos elementos
+ * Gera um ID único para novos elementos (apenas frontend)
  * @returns {number} ID único baseado em timestamp
  */
 function generateUniqueId() {
-    return Date.now() + Math.random();
+    return Date.now() + Math.floor(Math.random() * 1000);
 }
 
 /**
@@ -317,6 +111,7 @@ function generateUniqueId() {
  * @returns {string} Número formatado
  */
 function formatNumber(num) {
+    if (!num && num !== 0) return '0';
     return num.toLocaleString('pt-BR');
 }
 
@@ -326,6 +121,7 @@ function formatNumber(num) {
  * @returns {boolean} True se válido
  */
 function validateEmail(email) {
+    if (!email) return false;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
@@ -336,8 +132,21 @@ function validateEmail(email) {
  * @returns {string} String sanitizada
  */
 function sanitizeString(str) {
+    if (!str) return '';
     const div = document.createElement('div');
     div.textContent = str;
+    return div.innerHTML;
+}
+
+/**
+ * Escapa HTML para exibição segura
+ * @param {string} text - Texto para escapar
+ * @returns {string} Texto escapado
+ */
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
     return div.innerHTML;
 }
 
@@ -347,33 +156,344 @@ function sanitizeString(str) {
  * @returns {number} Tempo em minutos
  */
 function calculateReadingTime(content) {
+    if (!content) return 0;
     const wordsPerMinute = 200; // Média de leitura
     const wordCount = content.split(/\s+/).length;
     return Math.ceil(wordCount / wordsPerMinute);
 }
 
 /**
- * Obtém livros por categoria
- * @param {string} category - Nome da categoria
- * @returns {Array} Array de livros da categoria
+ * Formata data para exibição
+ * @param {string|Date} date - Data para formatar
+ * @returns {string} Data formatada
  */
-function getBooksByCategory(category) {
-    return books.filter(book => 
-        book.category.toLowerCase() === category.toLowerCase()
-    );
+function formatDate(date) {
+    if (!date) return 'Data não disponível';
+    const d = new Date(date);
+    return d.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
 }
 
 /**
- * Busca livros por termo
- * @param {string} query - Termo de busca
- * @returns {Array} Array de livros encontrados
+ * Formata tamanho de arquivo
+ * @param {number} bytes - Tamanho em bytes
+ * @returns {string} Tamanho formatado (ex: "2.5 MB")
  */
-function searchBooksData(query) {
-    const searchTerm = query.toLowerCase();
-    return books.filter(book =>
-        book.title.toLowerCase().includes(searchTerm) ||
-        book.author.toLowerCase().includes(searchTerm) ||
-        book.category.toLowerCase().includes(searchTerm) ||
-        book.description.toLowerCase().includes(searchTerm)
-    );
+function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
+
+/**
+ * Valida tamanho de arquivo
+ * @param {File} file - Arquivo para validar
+ * @returns {boolean} True se válido
+ */
+function validateFileSize(file) {
+    if (!file) return false;
+    return file.size <= appConfig.maxFileSize;
+}
+
+/**
+ * Valida formato de arquivo
+ * @param {string} filename - Nome do arquivo
+ * @returns {boolean} True se válido
+ */
+function validateFileFormat(filename) {
+    if (!filename) return false;
+    const extension = '.' + filename.split('.').pop().toLowerCase();
+    return appConfig.supportedFormats.includes(extension);
+}
+
+/**
+ * Trunca texto com reticências
+ * @param {string} text - Texto para truncar
+ * @param {number} maxLength - Comprimento máximo
+ * @returns {string} Texto truncado
+ */
+function truncateText(text, maxLength = 100) {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+/**
+ * Debounce para funções
+ * @param {Function} func - Função para fazer debounce
+ * @param {number} wait - Tempo de espera em ms
+ * @returns {Function} Função com debounce
+ */
+function debounce(func, wait = 300) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Obtém mensagem de erro amigável
+ * @param {Error|string} error - Erro para processar
+ * @returns {string} Mensagem de erro amigável
+ */
+function getFriendlyErrorMessage(error) {
+    if (!error) return messages.errors.serverError;
+    
+    if (typeof error === 'string') return error;
+    
+    if (error.message) {
+        const msg = error.message.toLowerCase();
+        
+        if (msg.includes('network') || msg.includes('fetch')) {
+            return messages.errors.networkError;
+        }
+        if (msg.includes('unauthorized') || msg.includes('401')) {
+            return messages.errors.unauthorized;
+        }
+        if (msg.includes('not found') || msg.includes('404')) {
+            return messages.errors.notFound;
+        }
+        
+        return error.message;
+    }
+    
+    return messages.errors.serverError;
+}
+
+/**
+ * Copia texto para área de transferência
+ * @param {string} text - Texto para copiar
+ * @returns {Promise<boolean>} True se copiado com sucesso
+ */
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        return true;
+    } catch (err) {
+        console.error('Erro ao copiar:', err);
+        return false;
+    }
+}
+
+/**
+ * Gera cor aleatória para categorias
+ * @returns {string} Código de cor hex
+ */
+function generateRandomColor() {
+    const colors = [
+        '#e74c3c', '#3498db', '#f39c12', '#9b59b6',
+        '#1abc9c', '#f1c40f', '#34495e', '#e67e22',
+        '#2ecc71', '#c0392b', '#16a085', '#d35400'
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+/**
+ * Verifica se é mobile
+ * @returns {boolean} True se for mobile
+ */
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+/**
+ * Scroll suave para elemento
+ * @param {string} elementId - ID do elemento
+ */
+function smoothScrollTo(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
+ * Obtém parâmetro da URL
+ * @param {string} param - Nome do parâmetro
+ * @returns {string|null} Valor do parâmetro
+ */
+function getUrlParameter(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
+
+/**
+ * Define título da página
+ * @param {string} title - Título da página
+ */
+function setPageTitle(title) {
+    document.title = title ? `${title} - ${appConfig.name}` : appConfig.name;
+}
+
+/**
+ * Sorteia array aleatoriamente
+ * @param {Array} array - Array para sortear
+ * @returns {Array} Array sorteado
+ */
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+/**
+ * Agrupa array por propriedade
+ * @param {Array} array - Array para agrupar
+ * @param {string} key - Chave para agrupar
+ * @returns {Object} Objeto agrupado
+ */
+function groupBy(array, key) {
+    return array.reduce((result, item) => {
+        const group = item[key];
+        if (!result[group]) {
+            result[group] = [];
+        }
+        result[group].push(item);
+        return result;
+    }, {});
+}
+
+/**
+ * Remove duplicatas de array
+ * @param {Array} array - Array com possíveis duplicatas
+ * @param {string} key - Chave para comparação (opcional)
+ * @returns {Array} Array sem duplicatas
+ */
+function removeDuplicates(array, key = null) {
+    if (!key) {
+        return [...new Set(array)];
+    }
+    const seen = new Set();
+    return array.filter(item => {
+        const value = item[key];
+        if (seen.has(value)) {
+            return false;
+        }
+        seen.add(value);
+        return true;
+    });
+}
+
+// ===========================================
+// VALIDAÇÕES DE FORMULÁRIO
+// ===========================================
+
+/**
+ * Valida força da senha
+ * @param {string} password - Senha para validar
+ * @returns {Object} Objeto com força e mensagem
+ */
+function validatePasswordStrength(password) {
+    if (!password) {
+        return { strength: 'weak', message: 'Digite uma senha' };
+    }
+
+    let strength = 0;
+    
+    if (password.length >= 6) strength++;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    if (strength <= 2) {
+        return { strength: 'weak', message: 'Senha fraca', score: strength };
+    }
+    if (strength <= 3) {
+        return { strength: 'medium', message: 'Senha média', score: strength };
+    }
+    return { strength: 'strong', message: 'Senha forte', score: strength };
+}
+
+/**
+ * Valida campos obrigatórios
+ * @param {Object} fields - Objeto com campos para validar
+ * @returns {Object} Objeto com resultado da validação
+ */
+function validateRequiredFields(fields) {
+    const errors = [];
+    
+    for (const [key, value] of Object.entries(fields)) {
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+            errors.push(`O campo ${key} é obrigatório`);
+        }
+    }
+    
+    return {
+        isValid: errors.length === 0,
+        errors: errors
+    };
+}
+
+// ===========================================
+// INICIALIZAÇÃO E LOG
+// ===========================================
+
+/**
+ * Log de desenvolvimento
+ * @param {string} message - Mensagem para logar
+ * @param {string} type - Tipo do log (info, warn, error)
+ */
+function devLog(message, type = 'info') {
+    if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev')) {
+        const styles = {
+            info: 'color: #3498db',
+            success: 'color: #27ae60',
+            warn: 'color: #f39c12',
+            error: 'color: #e74c3c'
+        };
+        console.log(`%c[BiblioLivre] ${message}`, styles[type] || styles.info);
+    }
+}
+
+// ===========================================
+// EXPORTAR PARA ESCOPO GLOBAL
+// ===========================================
+
+// Disponibilizar configurações e funções globalmente
+window.appConfig = appConfig;
+window.messages = messages;
+window.categoryIcons = categoryIcons;
+
+// Funções utilitárias
+window.getCategoryIcon = getCategoryIcon;
+window.generateUniqueId = generateUniqueId;
+window.formatNumber = formatNumber;
+window.validateEmail = validateEmail;
+window.sanitizeString = sanitizeString;
+window.escapeHtml = escapeHtml;
+window.calculateReadingTime = calculateReadingTime;
+window.formatDate = formatDate;
+window.formatFileSize = formatFileSize;
+window.validateFileSize = validateFileSize;
+window.validateFileFormat = validateFileFormat;
+window.truncateText = truncateText;
+window.debounce = debounce;
+window.getFriendlyErrorMessage = getFriendlyErrorMessage;
+window.copyToClipboard = copyToClipboard;
+window.generateRandomColor = generateRandomColor;
+window.isMobileDevice = isMobileDevice;
+window.smoothScrollTo = smoothScrollTo;
+window.getUrlParameter = getUrlParameter;
+window.setPageTitle = setPageTitle;
+window.shuffleArray = shuffleArray;
+window.groupBy = groupBy;
+window.removeDuplicates = removeDuplicates;
+window.validatePasswordStrength = validatePasswordStrength;
+window.validateRequiredFields = validateRequiredFields;
+window.devLog = devLog;
+
+devLog('Configurações e utilitários carregados', 'success');

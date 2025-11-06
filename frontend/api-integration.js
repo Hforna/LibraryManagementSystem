@@ -11,13 +11,30 @@
 const API_CONFIG = {
     baseURL: 'https://localhost:5001/api',
     endpoints: {
+        // Autenticação
         login: '/login',
         loginGoogle: '/login/google',
         loginGoogleCallback: '/login/google-callback',
         register: '/users',
         confirmEmail: '/users/confirm/email',
         refreshToken: '/token/refresh-token',
-        getBook: (id) => `/books/${id}`
+        
+        // Livros
+        books: '/books',
+        booksPaginated: (page, perPage) => `/books/filter?page=${page}&perPage=${perPage}`,
+        getBook: (id) => `/books/${id}`,
+        updateBook: (id) => `/books/${id}`,
+        deleteBook: (id) => `/books/${id}`,
+        
+        // Comentários
+        getBookComments: (bookId, page, perPage) => `/books/${bookId}/comments?page=${page}&perPage=${perPage}`,
+        createComment: (bookId) => `/books/${bookId}/comments`,
+        getComment: (commentId) => `/comments/${commentId}`,
+        deleteComment: (commentId) => `/comments/${commentId}`,
+        
+        // Likes
+        likeBook: (bookId) => `/books/${bookId}/like`,
+        unlikeBook: (bookId) => `/books/${bookId}/unlike`
     },
     storage: {
         accessToken: 'access_token',
@@ -32,66 +49,41 @@ const API_CONFIG = {
 // ===========================================
 
 class TokenManager {
-    /**
-     * Salva tokens no localStorage
-     */
     static saveTokens(accessToken, refreshToken, refreshExpiration) {
         localStorage.setItem(API_CONFIG.storage.accessToken, accessToken);
         localStorage.setItem(API_CONFIG.storage.refreshToken, refreshToken);
         localStorage.setItem(API_CONFIG.storage.refreshExpiration, refreshExpiration);
     }
 
-    /**
-     * Obtém access token
-     */
     static getAccessToken() {
         return localStorage.getItem(API_CONFIG.storage.accessToken);
     }
 
-    /**
-     * Obtém refresh token
-     */
     static getRefreshToken() {
         return localStorage.getItem(API_CONFIG.storage.refreshToken);
     }
 
-    /**
-     * Verifica se refresh token expirou
-     */
     static isRefreshTokenExpired() {
         const expiration = localStorage.getItem(API_CONFIG.storage.refreshExpiration);
         if (!expiration) return true;
-        
         return new Date(expiration) <= new Date();
     }
 
-    /**
-     * Limpa todos os tokens
-     */
     static clearTokens() {
         localStorage.removeItem(API_CONFIG.storage.accessToken);
         localStorage.removeItem(API_CONFIG.storage.refreshToken);
         localStorage.removeItem(API_CONFIG.storage.refreshExpiration);
     }
 
-    /**
-     * Salva dados do usuário
-     */
     static saveUserData(userData) {
         localStorage.setItem(API_CONFIG.storage.userData, JSON.stringify(userData));
     }
 
-    /**
-     * Obtém dados do usuário
-     */
     static getUserData() {
         const data = localStorage.getItem(API_CONFIG.storage.userData);
         return data ? JSON.parse(data) : null;
     }
 
-    /**
-     * Limpa dados do usuário
-     */
     static clearUserData() {
         localStorage.removeItem(API_CONFIG.storage.userData);
     }
@@ -102,13 +94,9 @@ class TokenManager {
 // ===========================================
 
 class ApiClient {
-    /**
-     * Faz requisição HTTP com tratamento de erros e refresh token automático
-     */
     static async request(endpoint, options = {}) {
         const url = API_CONFIG.baseURL + endpoint;
         
-        // Adicionar token de autenticação se disponível
         const token = TokenManager.getAccessToken();
         if (token && !options.skipAuth) {
             options.headers = {
@@ -117,8 +105,7 @@ class ApiClient {
             };
         }
 
-        // Adicionar Content-Type padrão para JSON
-        if (options.body && typeof options.body === 'object') {
+        if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
             options.headers = {
                 ...options.headers,
                 'Content-Type': 'application/json'
@@ -129,20 +116,16 @@ class ApiClient {
         try {
             const response = await fetch(url, options);
 
-            // Se 401 e temos refresh token, tentar renovar
             if (response.status === 401 && !options.skipAuth && !options.isRefreshRequest) {
                 const refreshed = await this.refreshAccessToken();
                 if (refreshed) {
-                    // Tentar novamente com novo token
                     return this.request(endpoint, options);
                 } else {
-                    // Refresh falhou, fazer logout
                     this.handleUnauthorized();
                     throw new Error('Sessão expirada. Faça login novamente.');
                 }
             }
 
-            // Processar resposta
             const data = await this.handleResponse(response);
             return { success: true, data };
 
@@ -152,19 +135,14 @@ class ApiClient {
         }
     }
 
-    /**
-     * Processa resposta da API
-     */
     static async handleResponse(response) {
         const contentType = response.headers.get('content-type');
         const isJson = contentType && contentType.includes('application/json');
 
-        // Resposta sem conteúdo
         if (response.status === 204) {
             return null;
         }
 
-        // Tentar parsear JSON
         let data = null;
         if (isJson) {
             data = await response.json();
@@ -172,9 +150,7 @@ class ApiClient {
             data = await response.text();
         }
 
-        // Verificar se resposta foi bem-sucedida
         if (!response.ok) {
-            // Tratar erros da API
             const error = this.parseError(data, response.status);
             throw error;
         }
@@ -182,11 +158,7 @@ class ApiClient {
         return data;
     }
 
-    /**
-     * Parseia erros da API
-     */
     static parseError(data, status) {
-        // Estrutura: RequestException ou UnauthorizedException com array 'errors'
         if (data && data.errors && Array.isArray(data.errors)) {
             return new Error(data.errors.join('\n'));
         }
@@ -195,7 +167,6 @@ class ApiClient {
             return new Error(data.message);
         }
 
-        // Mensagens padrão por status code
         const defaultMessages = {
             400: 'Requisição inválida. Verifique os dados enviados.',
             401: 'Não autorizado. Faça login novamente.',
@@ -207,9 +178,6 @@ class ApiClient {
         return new Error(defaultMessages[status] || 'Erro desconhecido na requisição.');
     }
 
-    /**
-     * Renova access token usando refresh token
-     */
     static async refreshAccessToken() {
         const refreshToken = TokenManager.getRefreshToken();
 
@@ -245,14 +213,10 @@ class ApiClient {
         }
     }
 
-    /**
-     * Trata caso de não autorizado (logout)
-     */
     static handleUnauthorized() {
         TokenManager.clearTokens();
         TokenManager.clearUserData();
         
-        // Se estiver na página principal, mostrar modal de login
         if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
             if (typeof showLoginModal === 'function') {
                 showLoginModal();
@@ -260,7 +224,6 @@ class ApiClient {
         }
     }
 
-    // Métodos de conveniência
     static get(endpoint, options = {}) {
         return this.request(endpoint, { ...options, method: 'GET' });
     }
@@ -283,11 +246,6 @@ class ApiClient {
 // ===========================================
 
 class AuthService {
-    /**
-     * Faz login do usuário
-     * @param {string} email - Email ou username
-     * @param {string} password - Senha
-     */
     static async login(email, password) {
         try {
             const response = await ApiClient.post(
@@ -297,14 +255,12 @@ class AuthService {
             );
 
             if (response.success && response.data) {
-                // Salvar tokens
                 TokenManager.saveTokens(
                     response.data.accessToken,
                     response.data.refreshToken,
                     response.data.refreshTokenExpiration
                 );
 
-                // Decodificar token para obter dados do usuário
                 const userData = this.decodeToken(response.data.accessToken);
                 TokenManager.saveUserData(userData);
 
@@ -318,12 +274,6 @@ class AuthService {
         }
     }
 
-    /**
-     * Registra novo usuário
-     * @param {string} userName - Nome de usuário/nick
-     * @param {string} email - Email
-     * @param {string} password - Senha
-     */
     static async register(userName, email, password) {
         try {
             const response = await ApiClient.post(
@@ -333,8 +283,6 @@ class AuthService {
             );
 
             if (response.success && response.data) {
-                // Retornar dados do usuário criado
-                // UserResponse: { id, userName, email, createdAt }
                 return { 
                     success: true, 
                     user: response.data,
@@ -349,11 +297,6 @@ class AuthService {
         }
     }
 
-    /**
-     * Confirma email do usuário
-     * @param {string} email - Email
-     * @param {string} token - Token de confirmação
-     */
     static async confirmEmail(email, token) {
         try {
             const response = await ApiClient.get(
@@ -368,24 +311,15 @@ class AuthService {
         }
     }
 
-    /**
-     * Inicia fluxo de login com Google
-     */
     static loginWithGoogle() {
         window.location.href = API_CONFIG.baseURL + API_CONFIG.endpoints.loginGoogle;
     }
 
-    /**
-     * Faz logout do usuário
-     */
     static logout() {
         TokenManager.clearTokens();
         TokenManager.clearUserData();
     }
 
-    /**
-     * Verifica se usuário está autenticado
-     */
     static isAuthenticated() {
         const token = TokenManager.getAccessToken();
         const userData = TokenManager.getUserData();
@@ -394,16 +328,12 @@ class AuthService {
             return false;
         }
 
-        // Verificar se token JWT ainda é válido
         try {
             const decoded = this.decodeToken(token);
             const currentTime = Date.now() / 1000;
             
-            // Token expirado
             if (decoded.exp && decoded.exp < currentTime) {
-                // Tentar renovar com refresh token
                 if (!TokenManager.isRefreshTokenExpired()) {
-                    // Refresh token ainda válido, pode renovar na próxima requisição
                     return true;
                 }
                 return false;
@@ -415,9 +345,6 @@ class AuthService {
         }
     }
 
-    /**
-     * Obtém dados do usuário autenticado
-     */
     static getCurrentUser() {
         if (!this.isAuthenticated()) {
             return null;
@@ -425,10 +352,6 @@ class AuthService {
         return TokenManager.getUserData();
     }
 
-    /**
-     * Decodifica token JWT (apenas payload, sem validação de assinatura)
-     * Nota: Validação real é feita no backend
-     */
     static decodeToken(token) {
         try {
             const parts = token.split('.');
@@ -439,8 +362,6 @@ class AuthService {
             const payload = parts[1];
             const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
 
-            // Extrair informações relevantes
-            // ClaimTypes.Sid contém o userId
             return {
                 userId: decoded[Object.keys(decoded).find(k => k.includes('sid'))] || decoded.sid,
                 email: decoded.email || decoded[Object.keys(decoded).find(k => k.includes('email'))],
@@ -461,13 +382,155 @@ class AuthService {
 
 class BookService {
     /**
-     * Busca livro por ID
-     * @param {number} id - ID do livro
+     * Busca livros com paginação
+     * @param {number} page - Número da página (começa em 1)
+     * @param {number} perPage - Quantidade de livros por página
+     * @returns {Promise<Object>} Resposta paginada com livros
      */
+    static async getBooksPaginated(page = 1, perPage = 12) {
+        try {
+            const response = await ApiClient.get(
+                API_CONFIG.endpoints.booksPaginated(page, perPage),
+                { skipAuth: true }
+            );
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async createBook(title, description, file, cover, categoriesIds) {
+        try {
+            const formData = new FormData();
+            formData.append('Title', title);
+            formData.append('Description', description);
+            formData.append('File', file);
+            
+            if (cover) {
+                formData.append('Cover', cover);
+            }
+            
+            categoriesIds.forEach(id => {
+                formData.append('CategoriesIds', id);
+            });
+
+            const response = await ApiClient.post(
+                API_CONFIG.endpoints.books,
+                formData
+            );
+
+            return { success: true, book: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
     static async getBookById(id) {
         try {
             const response = await ApiClient.get(API_CONFIG.endpoints.getBook(id));
             return { success: true, book: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async updateBook(id, updates) {
+        try {
+            const formData = new FormData();
+            
+            if (updates.title) formData.append('Title', updates.title);
+            if (updates.description) formData.append('Description', updates.description);
+            if (updates.file) formData.append('File', updates.file);
+            if (updates.cover) formData.append('Cover', updates.cover);
+            
+            if (updates.categoriesIds) {
+                updates.categoriesIds.forEach(catId => {
+                    formData.append('CategoriesIds', catId);
+                });
+            }
+
+            const response = await ApiClient.put(
+                API_CONFIG.endpoints.updateBook(id),
+                formData
+            );
+
+            return { success: true, book: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async deleteBook(bookId) {
+        try {
+            await ApiClient.delete(API_CONFIG.endpoints.deleteBook(bookId));
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async likeBook(bookId) {
+        try {
+            await ApiClient.post(API_CONFIG.endpoints.likeBook(bookId), {});
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async unlikeBook(bookId) {
+        try {
+            await ApiClient.delete(API_CONFIG.endpoints.unlikeBook(bookId));
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+}
+
+// ===========================================
+// SERVIÇO DE COMENTÁRIOS
+// ===========================================
+
+class CommentService {
+    static async getBookComments(bookId, page = 1, perPage = 10) {
+        try {
+            const response = await ApiClient.get(
+                API_CONFIG.endpoints.getBookComments(bookId, page, perPage)
+            );
+            return { success: true, comments: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async getCommentById(commentId) {
+        try {
+            const response = await ApiClient.get(
+                API_CONFIG.endpoints.getComment(commentId)
+            );
+            return { success: true, comment: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async createComment(bookId, text) {
+        try {
+            const response = await ApiClient.post(
+                API_CONFIG.endpoints.createComment(bookId),
+                { text }
+            );
+            return { success: true, comment: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async deleteComment(commentId) {
+        try {
+            await ApiClient.delete(API_CONFIG.endpoints.deleteComment(commentId));
+            return { success: true };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -478,13 +541,9 @@ class BookService {
 // INICIALIZAÇÃO E VERIFICAÇÕES
 // ===========================================
 
-/**
- * Verifica autenticação ao carregar página
- */
 function initializeAuth() {
     console.log('🔐 Inicializando sistema de autenticação...');
 
-    // Verificar se há parâmetros de confirmação de email na URL
     const urlParams = new URLSearchParams(window.location.search);
     const emailToken = urlParams.get('token');
     const email = urlParams.get('email');
@@ -494,17 +553,14 @@ function initializeAuth() {
         return;
     }
 
-    // Verificar autenticação existente
     if (AuthService.isAuthenticated()) {
         const user = AuthService.getCurrentUser();
         console.log('✅ Usuário autenticado:', user);
         
-        // Se estiver na página de login, redirecionar para index
         if (window.location.pathname.includes('login.html')) {
             window.location.href = 'index.html';
         }
         
-        // Restaurar sessão no frontend (se variável currentUser existir)
         if (typeof currentUser !== 'undefined') {
             currentUser = {
                 name: user.userName,
@@ -519,35 +575,29 @@ function initializeAuth() {
         }
     } else {
         console.log('❌ Usuário não autenticado');
-        
-        // Se não estiver na página de login e não for visitante, redirecionar
-        const isLoginPage = window.location.pathname.includes('login.html');
-        const isIndexPage = window.location.pathname.includes('index.html') || window.location.pathname === '/';
-        
-        if (!isLoginPage && !isIndexPage) {
-            // Páginas que requerem autenticação devem redirecionar
-            // window.location.href = 'login.html';
-        }
     }
 }
 
-/**
- * Trata confirmação de email
- */
 async function handleEmailConfirmation(email, token) {
     console.log('📧 Confirmando email...');
     
-    showNotification('Confirmando seu email...', 'info');
+    if (typeof showNotification === 'function') {
+        showNotification('Confirmando seu email...', 'info');
+    }
 
     const result = await AuthService.confirmEmail(email, token);
 
     if (result.success) {
-        showNotification('Email confirmado com sucesso! Você já pode fazer login.', 'success');
+        if (typeof showNotification === 'function') {
+            showNotification('Email confirmado com sucesso! Você já pode fazer login.', 'success');
+        }
         setTimeout(() => {
             window.location.href = 'login.html';
         }, 2000);
     } else {
-        showNotification(`Erro ao confirmar email: ${result.error}`, 'error');
+        if (typeof showNotification === 'function') {
+            showNotification(`Erro ao confirmar email: ${result.error}`, 'error');
+        }
     }
 }
 
@@ -555,18 +605,17 @@ async function handleEmailConfirmation(email, token) {
 // EXPORTAR PARA ESCOPO GLOBAL
 // ===========================================
 
-// Disponibilizar serviços globalmente para uso nos outros scripts
 window.API_CONFIG = API_CONFIG;
 window.TokenManager = TokenManager;
 window.ApiClient = ApiClient;
 window.AuthService = AuthService;
 window.BookService = BookService;
+window.CommentService = CommentService;
 
-// Inicializar quando DOM estiver carregado
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeAuth);
 } else {
     initializeAuth();
 }
 
-console.log('✅ API Integration carregada!');
+console.log('✅ API Integration carregada com paginação!');
