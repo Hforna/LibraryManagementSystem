@@ -21,4 +21,16 @@ namespace LibraryApp.Application.Responses
         public int TotalViews { get; set; } = 0;
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
     }
+
+    public class BookShortResponse
+    {
+        public long Id { get; set; }
+        public string CoverUrl { get; set; }
+        public string Title { get; set; }
+    }
+
+    public class BooksPaginatedResponse
+    {
+        public List<BookShortResponse> Books { get; set; }
+    }
 }

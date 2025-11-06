@@ -15,6 +15,7 @@ namespace LibraryApp.Application.Services
         public Task<BookResponse> GetBook(long id);
         public Task<BookResponse> CreateBook(BookRequest request);
         public Task<BookResponse> UpdateBook(UpdateBookRequest request, long id);
+        //public Task<Book>
         public Task DeleteBook(long bookId);
         public Task LikeBook(long bookId);
         public Task UnlikeBook(long bookId);
