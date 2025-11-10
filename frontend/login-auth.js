@@ -148,7 +148,7 @@ async function register(event) {
         }
     } catch (error) {
         hideButtonLoading('registerForm');
-        showNotification('Erro ao conectar com o servidor. Tente novamente.', 'error');
+        showNotification('Erro ao conectar com o servidor. Tente novamente.', error);
         console.error('Erro no cadastro:', error);
     }
 }

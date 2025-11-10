@@ -97,17 +97,17 @@ namespace LibraryApp.Infrastructure.Services.Security
         /// </summary>
         /// <returns>Usuário correspondente ao ID contido no token.</returns>
         /// <exception cref="RequestException">Lançada quando o token não é fornecido.</exception>
-        public Task<User?> GetUserByToken()
+        public async Task<User?> GetUserByToken()
         {
             var token = _requestService.GetBearerToken();
 
-            if (token is null)
-                return null;
+            if (string.IsNullOrEmpty(token))
+                return null!;
 
             var handler = new JwtSecurityTokenHandler();
             var read = handler.ReadJwtToken(token);
             var id = long.Parse(read.Claims.FirstOrDefault(d => d.Type == ClaimTypes.Sid)!.Value);
-            var user = _uow.UserRepository.GetUserById(id);
+            var user = await _uow.UserRepository.GetUserById(id);
 
             return user;
         }

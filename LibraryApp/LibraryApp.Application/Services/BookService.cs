@@ -259,7 +259,17 @@ namespace LibraryApp.Application.Services
             var books = await _uow.BookRepository.GetBooksPaginated(page, perPage);
 
             var response = _mapper.Map<BooksPaginatedResponse>(books);
-            response.Books = books.Results.Select(book => _mapper.Map<BookShortResponse>(book)).ToList();
+            var booksResponse = books.Results.Select(async book =>
+            {
+                var response = _mapper.Map<BookShortResponse>(book);
+                response.CoverUrl = string.IsNullOrEmpty(book.CoverName) ? "" : await _storageService.GetFileUrl(book.FileName, book.Title);
+
+                return response;
+            });
+
+            var booksList = await Task.WhenAll(booksResponse);
+
+            response.Books = booksList.ToList();
 
             return response;
         }

@@ -1,4 +1,5 @@
-﻿using LibraryApp.Domain.Entities;
+﻿using Dropbox.Api;
+using LibraryApp.Domain.Entities;
 using LibraryApp.Domain.Repositories;
 using LibraryApp.Domain.Services;
 using LibraryApp.Infrastructure.Context;
@@ -54,10 +55,12 @@ namespace LibraryApp.Infrastructure
 
         static void AddServices(IServiceCollection services, IConfiguration configuration)
         {
+            var dropBoxKey = configuration.GetValue<string>("services:storage:dropBox:apiKey");
+
+            services.AddScoped<IStorageService, DropBoxStorageService>(d => new DropBoxStorageService(dropBoxKey));
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
             services.AddSingleton<IEmailService, EmailService>();
             services.AddScoped<IRequestService, RequestService>();
-            services.AddScoped<IStorageService, GoogleStorageService>();
 
             var signKey = configuration.GetValue<string>("services:jwt:signKey")!;
             var expiresAt = configuration.GetValue<int>("services:jwt:expiresAt");
