@@ -1,6 +1,5 @@
 # Etapa base (runtime)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
@@ -24,4 +23,5 @@ RUN dotnet publish "./LibraryApp.Api.csproj" -c $BUILD_CONFIGURATION -o /app/pub
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY ./LibraryApp.Api/wwwroot ./wwwroot
 ENTRYPOINT ["dotnet", "LibraryApp.Api.dll"]
