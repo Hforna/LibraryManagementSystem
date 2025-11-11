@@ -7,6 +7,7 @@ using MimeKit;
 using Microsoft.Extensions.Options;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
+using System.Net.Sockets;
 
 namespace LibraryApp.Infrastructure.Services
 {
@@ -128,7 +129,12 @@ namespace LibraryApp.Infrastructure.Services
                 {
                     client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                    await client.ConnectAsync(_settings.Provider, _settings.Port, MailKit.Security.SecureSocketOptions.StartTls);
+                    var socketOptions = _settings.Port == 465
+                        ? MailKit.Security.SecureSocketOptions.SslOnConnect
+                        : MailKit.Security.SecureSocketOptions.StartTls;
+                    _logger.LogInformation($"Current socket options: {socketOptions.ToString()}");
+                    _logger.LogInformation("Provider: {provider}", _settings.Provider);
+                    await client.ConnectAsync(_settings.Provider, _settings.Port, socketOptions);
 
                     _logger.LogInformation("Client connected successfully");
 
