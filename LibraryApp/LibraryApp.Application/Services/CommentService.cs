@@ -39,10 +39,6 @@ public class CommentService : ICommentService
         var book = await _uow.BookRepository.GetFullBook(bookId)
                    ?? throw new NotFoundException("Livro não foi encontrado");
 
-        var userDownloaded = await _uow.BookRepository.UserDownloadedBook(user.Id, book.Id);
-        if (!userDownloaded)
-            throw new UnauthorizedException("Usuario deve baixar o livro antes de criar um comentario");
-
         var comment = new Comment(user.Id, book.Id, request.Text);
 
         await _uow.GenericRepository.Add<Comment>(comment);

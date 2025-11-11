@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Diagnostics.CodeAnalysis;
+using AutoMapper;
 using LibraryApp.Application.Responses;
 using LibraryApp.Domain.Entities;
 using LibraryApp.Domain.Exceptions;
@@ -199,17 +200,17 @@ namespace LibraryApp.Application.Services
         public async Task DeleteBook(long bookId)
         {
             var user = await _tokenService.GetUserByToken();
-       
-            var book = await _uow.GenericRepository.GetById<Book>(bookId) 
+
+            var book = await _uow.GenericRepository.GetById<Book>(bookId)
                        ?? throw new NotFoundException("Livro não foi encontrado");
-            
+
             if (book.UserId != user.Id)
                 throw new UnauthorizedException("Usuario não tem permissão para deletar livro");
 
             await _storageService.DeleteFile(book.FileName, book.Title);
-            if(!string.IsNullOrEmpty(book.CoverName)) 
+            if (!string.IsNullOrEmpty(book.CoverName))
                 await _storageService.DeleteFile(book.CoverName, book.Title);
-            
+
             _uow.BookRepository.DeleteBook(book);
             await _uow.Commit();
         }
