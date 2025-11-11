@@ -9,7 +9,7 @@
 // ===========================================
 
 const API_CONFIG = {
-    baseURL: 'https://localhost:5001/api',
+    baseURL: '/api',
     endpoints: {
         // Autenticação
         login: '/login',
