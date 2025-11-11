@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: libraryapp-backend
+    env: dotnet
+    rootDir: src/LibraryApp.Api
+    buildCommand: |
+      cp -r ../../frontend/* wwwroot
+      dotnet publish -c Release -o out
+    startCommand: dotnet out/LibraryApp.Api.dll
+    autoDeploy: true
