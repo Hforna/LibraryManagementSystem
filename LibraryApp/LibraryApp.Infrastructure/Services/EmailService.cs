@@ -130,7 +130,11 @@ namespace LibraryApp.Infrastructure.Services
 
                     await client.ConnectAsync(_settings.Provider, _settings.Port, MailKit.Security.SecureSocketOptions.StartTls);
 
+                    _logger.LogInformation("Client connected successfully");
+
                     await client.AuthenticateAsync(_settings.Email, _settings.Password);
+
+                    _logger.LogInformation("Client authenticated successfully");
 
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
