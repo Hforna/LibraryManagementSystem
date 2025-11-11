@@ -134,7 +134,7 @@ namespace LibraryApp.Infrastructure.Services
                         : MailKit.Security.SecureSocketOptions.StartTls;
                     _logger.LogInformation($"Current socket options: {socketOptions.ToString()}");
                     _logger.LogInformation("Provider: {provider}", _settings.Provider);
-                    await client.ConnectAsync(_settings.Provider, _settings.Port, socketOptions);
+                    await client.ConnectAsync(_settings.Provider, _settings.Port, MailKit.Security.SecureSocketOptions.Auto);
 
                     _logger.LogInformation("Client connected successfully");
 
