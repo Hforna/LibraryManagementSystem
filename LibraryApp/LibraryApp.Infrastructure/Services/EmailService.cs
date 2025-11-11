@@ -6,16 +6,19 @@ using System.Text;
 using MimeKit;
 using Microsoft.Extensions.Options;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
 
 namespace LibraryApp.Infrastructure.Services
 {
     public class EmailService : IEmailService
     {
         private readonly SmtpSettings _settings;
+        private readonly ILogger<IEmailService> _logger;
 
-        public EmailService(IOptions<SmtpSettings> settings)
+        public EmailService(IOptions<SmtpSettings> settings, ILogger<IEmailService> logger)
         {
             _settings = settings.Value;
+            _logger = logger;
         }
 
         private string GetBodyTemplate(string body)
@@ -106,6 +109,8 @@ namespace LibraryApp.Infrastructure.Services
 
         public async Task SendEmail(SendEmailDto dto)
         {
+            _logger.LogInformation("Sending email method started");
+
             var message = new MimeMessage();
 
             message.From.Add(new MailboxAddress(_settings.UserName, _settings.Email));
@@ -117,16 +122,24 @@ namespace LibraryApp.Infrastructure.Services
                 Text = GetBodyTemplate(dto.Body)
             };
 
-            using (var client = new SmtpClient())
+            try
             {
-                client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                using (var client = new SmtpClient())
+                {
+                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                await client.ConnectAsync(_settings.Provider, _settings.Port, true);
+                    await client.ConnectAsync(_settings.Provider, _settings.Port, MailKit.Security.SecureSocketOptions.StartTls);
 
-                await client.AuthenticateAsync(_settings.Email, _settings.Password);
+                    await client.AuthenticateAsync(_settings.Email, _settings.Password);
 
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
+                    await client.SendAsync(message);
+                    await client.DisconnectAsync(true);
+                }
+            }catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error while trying to send e-mail");
+
+                throw;
             }
         }
     }

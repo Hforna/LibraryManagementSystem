@@ -62,6 +62,7 @@ public class BookRepository : IBookRepository
     {
         return await _context.Books
             .AsNoTracking()
+            .OrderBy(d => d.Id)
             .AsPaginationAsync(page, perPage);
     }
 }
