@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioLivre - Login</title>
+    <link rel="stylesheet" href="login-styles.css">
+</head>
+<body>
+    <!-- Fundo animado -->
+    <div class="animated-background">
+        <div class="floating-book">📚</div>
+        <div class="floating-book">📖</div>
+        <div class="floating-book">📝</div>
+        <div class="floating-book">🔖</div>
+        <div class="floating-book">📜</div>
+        <div class="floating-book">📋</div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="login-container">
+        <!-- Logo e branding -->
+        <div class="brand-section">
+            <div class="logo">
+                <span class="logo-icon">📚</span>
+                <h1>BiblioLivre</h1>
+            </div>
+            <p class="tagline">Sua biblioteca digital gratuita</p>
+            <div class="features-preview">
+                <div class="feature-item">
+                    <span class="feature-icon">🌟</span>
+                    <span>Milhares de livros gratuitos</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📱</span>
+                    <span>Acesso em qualquer dispositivo</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">❤️</span>
+                    <span>Favoritos e listas pessoais</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de autenticação -->
+        <div class="auth-section">
+            <!-- Abas de Login/Cadastro -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="showAuthForm('login')">
+                    <span class="tab-icon">🔑</span>
+                    Entrar
+                </button>
+                <button class="auth-tab" onclick="showAuthForm('register')">
+                    <span class="tab-icon">✨</span>
+                    Cadastrar
+                </button>
+            </div>
+
+            <!-- Formulário de Login -->
+            <div id="loginForm" class="auth-form active">
+                <h2>Bem-vindo de volta!</h2>
+                <p class="form-subtitle">Entre com seu nick ou e-mail</p>
+
+                <form onsubmit="login(event)">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="loginCredential" placeholder="Nick ou e-mail" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="loginPassword" placeholder="Senha" required>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword')">
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="rememberMe">
+                            <span class="checkmark"></span>
+                            Lembrar de mim
+                        </label>
+                        <a href="#" class="forgot-link" onclick="showForgotPassword()">Esqueceu a senha?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-text">Entrar</span>
+                        <div class="btn-loading" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </form>
+
+                <!-- Divisor -->
+                <div class="divider">
+                    <span>ou continue com</span>
+                </div>
+
+                <!-- Login Social -->
+                <div class="social-login">
+                    <button class="social-btn google" onclick="loginWithGoogle()">
+                        <span class="social-icon">🔴</span>
+                        Google
+                    </button>
+                    <button class="social-btn facebook" onclick="loginWithFacebook()">
+                        <span class="social-icon">🔵</span>
+                        Facebook
+                    </button>
+                </div>
+
+                <!-- Link para visitante -->
+                <div class="guest-access">
+                    <p>Só quer dar uma olhada?</p>
+                    <a href="index.html" class="guest-link">Entrar como visitante</a>
+                </div>
+            </div>
+
+            <!-- Formulário de Cadastro -->
+            <div id="registerForm" class="auth-form">
+                <h2>Crie sua conta</h2>
+                <p class="form-subtitle">Junte-se à nossa comunidade de leitores</p>
+
+                <form onsubmit="register(event)">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon">🏷️</span>
+                            <input type="text" id="registerNick" placeholder="Escolha seu apelido/nick" required>
+                        </div>
+                        <div class="input-hint">
+                            Este será seu nome na plataforma
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon">📧</span>
+                            <input type="email" id="registerEmail" placeholder="Seu melhor e-mail" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="registerPassword" placeholder="Crie uma senha segura" required>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('registerPassword')">
+                                👁️
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="passwordStrength"></div>
+                            </div>
+                            <span class="strength-text" id="passwordStrengthText">Digite uma senha</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon">✅</span>
+                            <input type="password" id="confirmPassword" placeholder="Confirme sua senha" required>
+                            <span class="validation-icon" id="passwordMatch"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="acceptTerms" required>
+                            <span class="checkmark"></span>
+                            Aceito os <a href="#" onclick="showTerms()">Termos de Uso</a> e <a href="#" onclick="showPrivacy()">Política de Privacidade</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-text">Criar Conta</span>
+                        <div class="btn-loading" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </form>
+
+                <!-- Divisor -->
+                <div class="divider">
+                    <span>ou cadastre-se com</span>
+                </div>
+
+                <!-- Cadastro Social -->
+                <div class="social-login">
+                    <button class="social-btn google" onclick="registerWithGoogle()">
+                        <span class="social-icon">🔴</span>
+                        Google
+                    </button>
+                    <button class="social-btn facebook" onclick="registerWithFacebook()">
+                        <span class="social-icon">🔵</span>
+                        Facebook
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulário de Recuperação de Senha -->
+            <div id="forgotForm" class="auth-form">
+                <h2>Recuperar Senha</h2>
+                <p class="form-subtitle">Digite seu nick ou e-mail para receber o link de recuperação</p>
+
+                <form onsubmit="resetPassword(event)">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon">📧</span>
+                            <input type="text" id="forgotCredential" placeholder="Nick ou e-mail cadastrado" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-text">Enviar Link</span>
+                        <div class="btn-loading" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </form>
+
+                <div class="back-to-login">
+                    <a href="#" onclick="showAuthForm('login')">← Voltar ao login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificações -->
+    <div id="notification" class="notification hidden">
+        <span class="notification-text"></span>
+        <button class="notification-close" onclick="hideNotification()">✕</button>
+    </div>
+
+    <!-- Usuários de demonstração -->
+    <div class="demo-users">
+        <h3>👥 Contas de Teste</h3>
+        <div class="demo-user" onclick="fillLogin('admin', '123456')">
+            <strong>admin</strong> • 123456
+        </div>
+        <div class="demo-user" onclick="fillLogin('leitor01', 'senha123')">
+            <strong>leitor01</strong> • senha123
+        </div>
+        <div class="demo-user" onclick="fillLogin('bookworm', 'livros2025')">
+            <strong>bookworm</strong> • livros2025
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="api-integration.js"></script>
+    <script src="login-auth.js"></script>
+</body>
+</html>
