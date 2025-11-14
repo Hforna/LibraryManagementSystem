@@ -127,14 +127,14 @@ namespace LibraryApp.Infrastructure.Services
             {
                 using (var client = new SmtpClient())
                 {
-                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                    //client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                     var socketOptions = _settings.Port == 465
                         ? MailKit.Security.SecureSocketOptions.SslOnConnect
                         : MailKit.Security.SecureSocketOptions.StartTls;
                     _logger.LogInformation($"Current socket options: {socketOptions.ToString()}");
                     _logger.LogInformation("Provider: {provider}", _settings.Provider);
-                    await client.ConnectAsync(_settings.Provider, _settings.Port, MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable);
+                    await client.ConnectAsync(_settings.Provider, _settings.Port, socketOptions);
 
                     _logger.LogInformation("Client connected successfully");
 
