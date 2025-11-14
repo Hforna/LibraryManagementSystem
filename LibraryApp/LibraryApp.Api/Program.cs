@@ -30,8 +30,6 @@ builder.Services.AddRouting(d => d.LowercaseUrls = true);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("services:smtp"));
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(jwtOptions =>
 {

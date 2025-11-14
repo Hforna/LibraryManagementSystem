@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SendGrid;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -66,8 +67,6 @@ namespace LibraryApp.Infrastructure
 
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
 
-            services.AddSingleton<IEmailService, EmailService>();
-
             services.AddScoped<IRequestService, RequestService>();
 
             //Configura o serviço de token para autenticação
@@ -80,6 +79,18 @@ namespace LibraryApp.Infrastructure
                 refreshExpiresAt, 
                 d.CreateScope().ServiceProvider.GetRequiredService<IUnitOfWork>(),
                 d.CreateScope().ServiceProvider.GetRequiredService<IRequestService>()));
+
+            var sendGridKey = configuration.GetValue<string>("services:sendgrid:apiKey");
+            services.AddScoped<SendGridClient>(d => new SendGridClient(sendGridKey));
+
+            services.AddSingleton<IEmailService, EmailService>(d =>
+            {
+                using var scope = d.CreateScope();
+
+                return new EmailService(scope.ServiceProvider.GetRequiredService<SendGridClient>(), 
+                    configuration.GetValue<string>("services:sendgrid:email")!, 
+                    configuration.GetValue<string>("services:sendgrid:userName")!);
+            });
         }
     }
 }

@@ -5,21 +5,23 @@ using System.Collections.Generic;
 using System.Text;
 using MimeKit;
 using Microsoft.Extensions.Options;
-using MailKit.Net.Smtp;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Logging;
-using System.Net.Sockets;
 
 namespace LibraryApp.Infrastructure.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly SmtpSettings _settings;
-        private readonly ILogger<IEmailService> _logger;
+        private readonly SendGridClient _sendGrid;
+        private readonly string _fromEmail;
+        private readonly string _fromUserName;
 
-        public EmailService(IOptions<SmtpSettings> settings, ILogger<IEmailService> logger)
+        public EmailService(SendGridClient sendGrid, string fromEmail, string fromUserName)
         {
-            _settings = settings.Value;
-            _logger = logger;
+            _sendGrid = sendGrid;
+            _fromEmail = fromEmail;
+            _fromUserName = fromUserName;
         }
 
         private string GetBodyTemplate(string body)
@@ -110,56 +112,12 @@ namespace LibraryApp.Infrastructure.Services
 
         public async Task SendEmail(SendEmailDto dto)
         {
-            _logger.LogInformation("Sending email method started");
-
-            var message = new MimeMessage();
-
-            message.From.Add(new MailboxAddress(_settings.UserName, _settings.Email));
-            message.To.Add(new MailboxAddress(dto.ToUserName, dto.ToEmail));
-
-            message.Subject = dto.Subject;
-            message.Body = new TextPart("html")
-            {
-                Text = GetBodyTemplate(dto.Body)
-            };
-
-            try
-            {
-                using (var client = new SmtpClient())
-                {
-                    //client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-                    var socketOptions = _settings.Port == 465
-                        ? MailKit.Security.SecureSocketOptions.SslOnConnect
-                        : MailKit.Security.SecureSocketOptions.StartTls;
-                    _logger.LogInformation($"Current socket options: {socketOptions.ToString()}");
-                    _logger.LogInformation("Provider: {provider}", _settings.Provider);
-                    await client.ConnectAsync(_settings.Provider, _settings.Port, socketOptions);
-
-                    _logger.LogInformation("Client connected successfully");
-
-                    await client.AuthenticateAsync(_settings.Email, _settings.Password);
-
-                    _logger.LogInformation("Client authenticated successfully");
-
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
-                }
-            }catch(Exception ex)
-            {
-                _logger.LogError(ex, "Error while trying to send e-mail");
-
-                throw;
-            }
+            var toEmail = new EmailAddress(dto.ToEmail, dto.ToUserName);
+            var fromEmail = new EmailAddress(_fromEmail, _fromUserName);
+            var subject = dto.Subject;
+            var htmlContent = GetBodyTemplate(dto.Body);
+            var msg = MailHelper.CreateSingleEmail(fromEmail, toEmail, subject, string.Empty, htmlContent);
+            var response = await _sendGrid.SendEmailAsync(msg);
         }
-    }
-
-    public class SmtpSettings
-    {
-        public required string Email { get; set; }
-        public required string Password { get; set; }
-        public required string UserName { get; set; }
-        public int Port { get; set; }
-        public required string Provider { get; set; }
     }
 }
