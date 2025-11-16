@@ -13,6 +13,8 @@ namespace LibraryApp.Api.Middlewares
                 await next(context);
             }catch(Exception ex)
             {
+                logger.LogError(ex, $"An error occured: {ex.Message}");
+                
                 HttpStatusCode statusCode = ex switch
                 {
                     RequestException => HttpStatusCode.BadRequest,
