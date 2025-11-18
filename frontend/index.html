@@ -903,9 +903,7 @@
                 let coverImageHtml;
                 if (book.coverUrl) {
                     // Se a URL já está completa (começa com http/https)
-                    const imageUrl = book.coverUrl.startsWith('http') 
-                        ? book.coverUrl 
-                        : `https://localhost:5001${book.coverUrl}`;
+                    const imageUrl = book.coverUrl;
                     
                     coverImageHtml = `<img src="${escapeHtml(imageUrl)}" 
                                            alt="${escapeHtml(book.title)}"

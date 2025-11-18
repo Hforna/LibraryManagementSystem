@@ -36,8 +36,15 @@
         }
 
         @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .header-top {
@@ -96,11 +103,11 @@
             box-shadow: 0 5px 20px rgba(74, 84, 225, 0.3);
         }
 
-        .btn-login:hover, .btn-logout:hover, .btn-upload:hover {
-            background: linear-gradient(135deg, #3742c7, #5a3d7a);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(74, 84, 225, 0.4);
-        }
+            .btn-login:hover, .btn-logout:hover, .btn-upload:hover {
+                background: linear-gradient(135deg, #3742c7, #5a3d7a);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(74, 84, 225, 0.4);
+            }
 
         .btn-logout {
             background: #dc3545;
@@ -108,9 +115,9 @@
             font-size: 0.9rem;
         }
 
-        .btn-logout:hover {
-            background: #c82333;
-        }
+            .btn-logout:hover {
+                background: #c82333;
+            }
 
         .header h1 {
             color: #4a54e1;
@@ -143,10 +150,10 @@
             transition: all 0.3s ease;
         }
 
-        .search-box:focus {
-            border-color: #4a54e1;
-            box-shadow: 0 0 15px rgba(74, 84, 225, 0.2);
-        }
+            .search-box:focus {
+                border-color: #4a54e1;
+                box-shadow: 0 0 15px rgba(74, 84, 225, 0.2);
+            }
 
         .search-btn {
             position: absolute;
@@ -164,9 +171,9 @@
             font-size: 1.2rem;
         }
 
-        .search-btn:hover {
-            background: #3742c7;
-        }
+            .search-btn:hover {
+                background: #3742c7;
+            }
 
         /* STATS */
         .stats-container {
@@ -222,10 +229,10 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .book-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
+            .book-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            }
 
         .book-cover {
             width: 100%;
@@ -240,12 +247,18 @@
             font-size: 4rem;
         }
 
-        .book-cover img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 10px;
-        }
+            .book-cover img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 10px;
+                display: block;
+            }
+
+                .book-cover img[src=""],
+                .book-cover img:not([src]) {
+                    display: none;
+                }
 
         .book-title {
             font-size: 1.2rem;
@@ -294,10 +307,10 @@
             flex: 1;
         }
 
-        .btn-read:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
+            .btn-read:hover {
+                background: #218838;
+                transform: translateY(-2px);
+            }
 
         .btn-like {
             background: #6c757d;
@@ -311,13 +324,13 @@
             font-size: 1.2rem;
         }
 
-        .btn-like:hover {
-            transform: scale(1.1);
-        }
+            .btn-like:hover {
+                transform: scale(1.1);
+            }
 
-        .btn-like.liked {
-            background: #dc3545;
-        }
+            .btn-like.liked {
+                background: #dc3545;
+            }
 
         /* PAGINAÇÃO */
         .pagination-container {
@@ -329,28 +342,28 @@
             flex-wrap: wrap;
         }
 
-        .pagination-container button {
-            padding: 10px 16px;
-            border: 2px solid #4a54e1;
-            background: white;
-            color: #4a54e1;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
+            .pagination-container button {
+                padding: 10px 16px;
+                border: 2px solid #4a54e1;
+                background: white;
+                color: #4a54e1;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                font-size: 0.9rem;
+            }
 
-        .pagination-container button:hover:not(:disabled) {
-            background: #4a54e1;
-            color: white;
-            transform: translateY(-2px);
-        }
+                .pagination-container button:hover:not(:disabled) {
+                    background: #4a54e1;
+                    color: white;
+                    transform: translateY(-2px);
+                }
 
-        .pagination-container button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
+                .pagination-container button:disabled {
+                    opacity: 0.3;
+                    cursor: not-allowed;
+                }
 
         .pagination-info {
             color: #666;
@@ -377,8 +390,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* NOTIFICATION */
@@ -396,17 +414,32 @@
             display: none;
         }
 
-        .notification.show {
-            display: block;
-        }
+            .notification.show {
+                display: block;
+            }
 
-        .notification.success { background: #28a745; }
-        .notification.error { background: #dc3545; }
-        .notification.info { background: #17a2b8; }
+            .notification.success {
+                background: #28a745;
+            }
+
+            .notification.error {
+                background: #dc3545;
+            }
+
+            .notification.info {
+                background: #17a2b8;
+            }
 
         @keyframes slideInRight {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         /* MODAL */
@@ -424,9 +457,9 @@
             justify-content: center;
         }
 
-        .modal.show {
-            display: flex;
-        }
+            .modal.show {
+                display: flex;
+            }
 
         .modal-content {
             background: white;
@@ -450,9 +483,9 @@
             color: #999;
         }
 
-        .modal-close:hover {
-            color: #333;
-        }
+            .modal-close:hover {
+                color: #333;
+            }
 
         .modal h2 {
             color: #4a54e1;
@@ -464,25 +497,25 @@
             margin-bottom: 20px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #333;
-        }
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: bold;
+                color: #333;
+            }
 
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
+            .form-group input, .form-group textarea {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+                font-size: 1rem;
+            }
 
-        .form-group input:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #4a54e1;
-        }
+                .form-group input:focus, .form-group textarea:focus {
+                    outline: none;
+                    border-color: #4a54e1;
+                }
 
         .btn-primary {
             background: linear-gradient(135deg, #4a54e1, #764ba2);
@@ -497,15 +530,15 @@
             transition: all 0.3s ease;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(74, 84, 225, 0.3);
-        }
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(74, 84, 225, 0.3);
+            }
 
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+            .btn-primary:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
 
         .modal-link {
             text-align: center;
@@ -513,15 +546,15 @@
             color: #666;
         }
 
-        .modal-link a {
-            color: #4a54e1;
-            font-weight: bold;
-            text-decoration: none;
-        }
+            .modal-link a {
+                color: #4a54e1;
+                font-weight: bold;
+                text-decoration: none;
+            }
 
-        .modal-link a:hover {
-            text-decoration: underline;
-        }
+                .modal-link a:hover {
+                    text-decoration: underline;
+                }
 
         .social-btn {
             width: 100%;
@@ -535,10 +568,10 @@
             transition: all 0.3s ease;
         }
 
-        .social-btn:hover {
-            background: #f8f9fa;
-            transform: translateY(-2px);
-        }
+            .social-btn:hover {
+                background: #f8f9fa;
+                transform: translateY(-2px);
+            }
 
         /* RESPONSIVE */
         @media (max-width: 768px) {
@@ -563,10 +596,10 @@
                 gap: 5px;
             }
 
-            .pagination-container button {
-                padding: 8px 12px;
-                font-size: 0.85rem;
-            }
+                .pagination-container button {
+                    padding: 8px 12px;
+                    font-size: 0.85rem;
+                }
         }
     </style>
 </head>
@@ -579,7 +612,7 @@
                     <div class="logo">📚</div>
                     <div class="logo-text">BiblioLivre</div>
                 </div>
-                
+
                 <div class="user-section" id="userSection">
                     <!-- Preenchido dinamicamente -->
                 </div>
@@ -619,7 +652,7 @@
                     <p style="margin-top: 15px;">Carregando livros...</p>
                 </div>
             </div>
-            
+
             <!-- PAGINAÇÃO -->
             <div id="paginationContainer" class="pagination-container" style="display: none;">
                 <button id="btnFirstPage" onclick="goToPage(1)">« Primeira</button>
@@ -731,25 +764,25 @@
         const booksPerPage = 12;
 
         // ========== AUTENTICAÇÃO ==========
-        
+
         function updateAuthUI() {
             const userSection = document.getElementById('userSection');
             const user = AuthService.getCurrentUser();
 
             if (user) {
                 userSection.innerHTML = `
-                    <div class="user-info">
-                        <span>👤</span>
-                        <span>${escapeHtml(user.userName || user.email)}</span>
-                    </div>
-                    <button class="btn-upload" onclick="showUploadModal()">📤 Enviar</button>
-                    <button class="btn-logout" onclick="logout()">Sair</button>
-                `;
+                        <div class="user-info">
+                            <span>👤</span>
+                            <span>${escapeHtml(user.userName || user.email)}</span>
+                        </div>
+                        <button class="btn-upload" onclick="showUploadModal()">📤 Enviar</button>
+                        <button class="btn-logout" onclick="logout()">Sair</button>
+                    `;
             } else {
                 userSection.innerHTML = `
-                    <button class="btn-login" onclick="showLoginModal()">🔑 Entrar</button>
-                    <button class="btn-login" onclick="showRegisterModal()">✨ Cadastrar</button>
-                `;
+                        <button class="btn-login" onclick="showLoginModal()">🔑 Entrar</button>
+                        <button class="btn-login" onclick="showRegisterModal()">✨ Cadastrar</button>
+                    `;
             }
         }
 
@@ -839,17 +872,17 @@
         async function loadBooks(page = 1) {
             try {
                 showLoading(true);
-                
+
                 const response = await BookService.getBooksPaginated(page, booksPerPage);
-                
+
                 if (response.success && response.data) {
                     const paginatedData = response.data;
-                    
+
                     currentBooks = paginatedData.books || [];
                     currentPage = paginatedData.currentPage || 1;
                     totalPages = paginatedData.totalPages || 1;
                     totalItems = paginatedData.totalItems || 0;
-                    
+
                     await renderBooks(currentBooks);
                     updatePagination(paginatedData);
                     updateStats();
@@ -859,7 +892,7 @@
             } catch (error) {
                 console.error('Erro ao carregar livros:', error);
                 showNotification('Erro ao carregar livros', 'error');
-                document.getElementById('booksGrid').innerHTML = 
+                document.getElementById('booksGrid').innerHTML =
                     '<p style="text-align: center; color: #666;">Erro ao carregar livros. Tente novamente.</p>';
             } finally {
                 showLoading(false);
@@ -874,11 +907,15 @@
                 return;
             }
 
+            // Buscar detalhes completos de cada livro para obter coverUrl
             const booksWithDetails = await Promise.all(
                 books.map(async (book) => {
                     try {
                         const detailResponse = await BookService.getBookById(book.id);
-                        return detailResponse.success ? detailResponse.book : book;
+                        if (detailResponse.success && detailResponse.book) {
+                            return detailResponse.book;
+                        }
+                        return book;
                     } catch (error) {
                         console.error(`Erro ao buscar detalhes do livro ${book.id}:`, error);
                         return book;
@@ -888,30 +925,42 @@
 
             grid.innerHTML = booksWithDetails.map(book => {
                 const isLiked = likedBooks.has(book.id);
+
+                // Construir URL da capa corretamente
+                let coverImageHtml;
+                if (book.coverUrl) {
+                    // Se a URL já está completa (começa com http/https)
+                    const imageUrl = book.coverUrl;
+
+                    coverImageHtml = `<img src="${escapeHtml(imageUrl)}"
+                                               alt="${escapeHtml(book.title)}"
+                                               onerror="this.parentElement.innerHTML='📖'">`;
+                } else {
+                    coverImageHtml = '📖';
+                }
+
                 return `
-                    <div class="book-card">
-                        <div class="book-cover">
-                            ${book.coverUrl ? 
-                                `<img src="${escapeHtml(book.coverUrl)}" alt="${escapeHtml(book.title)}">` : 
-                                '📖'}
+                        <div class="book-card">
+                            <div class="book-cover">
+                                ${coverImageHtml}
+                            </div>
+                            <div class="book-title">${escapeHtml(book.title)}</div>
+                            <div class="book-author">por: ${escapeHtml(book.user?.userName || 'Desconhecido')}</div>
+                            <div class="book-stats">
+                                ❤️ ${book.likesCount || 0} curtidas
+                            </div>
+                            <div class="book-actions">
+                                <button class="btn btn-read" onclick="readBook(${book.id})" title="Ler livro">
+                                    📖 Ler
+                                </button>
+                                <button class="btn btn-like ${isLiked ? 'liked' : ''}"
+                                        onclick="toggleLike(${book.id})"
+                                        title="${isLiked ? 'Descurtir' : 'Curtir'}">
+                                    ${isLiked ? '❤️' : '🤍'}
+                                </button>
+                            </div>
                         </div>
-                        <div class="book-title">${escapeHtml(book.title)}</div>
-                        <div class="book-author">por: ${escapeHtml(book.user?.userName || 'Desconhecido')}</div>
-                        <div class="book-stats">
-                            ❤️ ${book.likesCount || 0} curtidas
-                        </div>
-                        <div class="book-actions">
-                            <button class="btn btn-read" onclick="readBook(${book.id})" title="Ler livro">
-                                📖 Ler
-                            </button>
-                            <button class="btn btn-like ${isLiked ? 'liked' : ''}" 
-                                    onclick="toggleLike(${book.id})" 
-                                    title="${isLiked ? 'Descurtir' : 'Curtir'}">
-                                ${isLiked ? '❤️' : '🤍'}
-                            </button>
-                        </div>
-                    </div>
-                `;
+                    `;
             }).join('');
         }
 
@@ -925,9 +974,9 @@
 
             if (totalPages > 1) {
                 container.style.display = 'flex';
-                
+
                 info.textContent = `Página ${currentPage} de ${totalPages} (${totalItems} livros)`;
-                
+
                 btnFirst.disabled = !paginatedData.hasPreviousPage;
                 btnPrev.disabled = !paginatedData.hasPreviousPage;
                 btnNext.disabled = !paginatedData.hasNextPage;
@@ -964,23 +1013,23 @@
             const grid = document.getElementById('booksGrid');
             if (show) {
                 grid.innerHTML = `
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p style="margin-top: 15px;">Carregando livros...</p>
-                    </div>
-                `;
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 15px;">Carregando livros...</p>
+                        </div>
+                    `;
             }
         }
 
         function searchBooks() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            
+
             if (!query) {
                 loadBooks(1);
                 return;
             }
 
-            const filtered = currentBooks.filter(book => 
+            const filtered = currentBooks.filter(book =>
                 book.title.toLowerCase().includes(query)
             );
 
@@ -1082,7 +1131,7 @@
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type} show`;
-            
+
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
@@ -1104,16 +1153,16 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log('📚 BiblioLivre iniciando com paginação...');
-            
+
             const initApp = () => {
                 if (typeof AuthService === 'undefined') {
                     setTimeout(initApp, 100);
                     return;
                 }
-                
+
                 updateAuthUI();
                 loadBooks(1);
-                
+
                 document.getElementById('searchInput').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') searchBooks();
                 });
