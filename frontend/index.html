@@ -245,6 +245,12 @@
             height: 100%;
             object-fit: cover;
             border-radius: 10px;
+            display: block;
+        }
+
+        .book-cover img[src=""],
+        .book-cover img:not([src]) {
+            display: none;
         }
 
         .book-title {
@@ -874,11 +880,15 @@
                 return;
             }
 
+            // Buscar detalhes completos de cada livro para obter coverUrl
             const booksWithDetails = await Promise.all(
                 books.map(async (book) => {
                     try {
                         const detailResponse = await BookService.getBookById(book.id);
-                        return detailResponse.success ? detailResponse.book : book;
+                        if (detailResponse.success && detailResponse.book) {
+                            return detailResponse.book;
+                        }
+                        return book;
                     } catch (error) {
                         console.error(`Erro ao buscar detalhes do livro ${book.id}:`, error);
                         return book;
@@ -888,12 +898,26 @@
 
             grid.innerHTML = booksWithDetails.map(book => {
                 const isLiked = likedBooks.has(book.id);
+                
+                // Construir URL da capa corretamente
+                let coverImageHtml;
+                if (book.coverUrl) {
+                    // Se a URL já está completa (começa com http/https)
+                    const imageUrl = book.coverUrl.startsWith('http') 
+                        ? book.coverUrl 
+                        : `https://localhost:5001${book.coverUrl}`;
+                    
+                    coverImageHtml = `<img src="${escapeHtml(imageUrl)}" 
+                                           alt="${escapeHtml(book.title)}"
+                                           onerror="this.parentElement.innerHTML='📖'">`;
+                } else {
+                    coverImageHtml = '📖';
+                }
+                
                 return `
                     <div class="book-card">
                         <div class="book-cover">
-                            ${book.coverUrl ? 
-                                `<img src="${escapeHtml(book.coverUrl)}" alt="${escapeHtml(book.title)}">` : 
-                                '📖'}
+                            ${coverImageHtml}
                         </div>
                         <div class="book-title">${escapeHtml(book.title)}</div>
                         <div class="book-author">por: ${escapeHtml(book.user?.userName || 'Desconhecido')}</div>
