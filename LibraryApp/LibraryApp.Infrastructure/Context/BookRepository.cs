@@ -11,6 +11,13 @@ public class BookRepository : IBookRepository
 
     public BookRepository(DataContext dataContext) => _context = dataContext;
 
+    public async Task<List<Category>> GetCategories()
+    {
+        return await _context.Categories
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public async Task<bool> BookByTitleExists(string title)
     {
         return await _context.Books.AnyAsync(d => d.Title == title);
@@ -26,7 +33,7 @@ public class BookRepository : IBookRepository
         return await _context.Downloads.AnyAsync(d => d.UserId == userId && d.BookId == bookId);
     }
 
-    public async Task<List<Category>> GetCategories(List<long> categoriesIds)
+    public async Task<List<Category>> GetCategoriesByIds(List<long> categoriesIds)
     {
         return await _context.Categories
             .AsNoTracking()

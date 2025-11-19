@@ -30,6 +30,8 @@ namespace LibraryApp.Application
             CreateMap<Pagination<Book>, BooksPaginatedResponse>();
 
             CreateMap<Book, BookShortResponse>();
+
+            CreateMap<Category, CategoryResponse>();
         }
     }
 }

@@ -376,6 +376,20 @@ class AuthService {
     }
 }
 
+class CategoryService {
+    static async getCategories()
+    {
+        try
+        {
+            var response = await ApiClient.get('/categories', { skipAuth: true });
+            return { success: true, data: response.data };
+        }catch(error)
+        {
+            return { success: false, error: error.message };
+        }
+    }
+}
+
 // ===========================================
 // SERVIÇO DE LIVROS
 // ===========================================

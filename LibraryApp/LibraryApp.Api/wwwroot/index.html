@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BiblioLivre - Sua Biblioteca Digital</title>
     <style>
+        /* Estilos anteriores permanecem os mesmos */
         * {
             margin: 0;
             padding: 0;
@@ -258,7 +259,7 @@
                 .book-cover img[src=""],
                 .book-cover img:not([src]) {
                     display: none;
-                }
+            }
 
         .book-title {
             font-size: 1.2rem;
@@ -573,6 +574,102 @@
                 transform: translateY(-2px);
             }
 
+        /* NOVOS ESTILOS PARA CATEGORIAS COM ROLAGEM */
+        .categories-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e9ecef;
+            background: white;
+        }
+
+            .category-item:hover {
+                background: #f8f9fa;
+            }
+
+            .category-item.selected {
+                background: rgba(74, 84, 225, 0.1);
+                border-color: #4a54e1;
+                color: #4a54e1;
+            }
+
+        .category-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: #4a54e1;
+        }
+
+        .category-label {
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .selected-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .selected-category-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(74, 84, 225, 0.1);
+            color: #4a54e1;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .remove-category {
+            background: none;
+            border: none;
+            color: #4a54e1;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .categories-search {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+            .categories-search:focus {
+                outline: none;
+                border-color: #4a54e1;
+            }
+
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .header h1 {
@@ -600,6 +697,10 @@
                     padding: 8px 12px;
                     font-size: 0.85rem;
                 }
+
+            .categories-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
         }
     </style>
 </head>
@@ -636,10 +737,6 @@
             <div class="stat-card">
                 <div class="stat-number" id="currentPageStat">1</div>
                 <div class="stat-label">Página Atual</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalUsers">156</div>
-                <div class="stat-label">Usuários Ativos</div>
             </div>
         </div>
 
@@ -738,9 +835,16 @@
                     <input type="file" id="bookCover" accept="image/*">
                 </div>
                 <div class="form-group">
-                    <label>Categorias (IDs separados por vírgula) *</label>
-                    <input type="text" id="bookCategories" placeholder="Ex: 1,2,3" required>
-                    <small style="color: #666;">Dica: 1-Ficção, 2-Não-Ficção, 3-Técnico</small>
+                    <label>Categorias *</label>
+                    <input type="text" class="categories-search" id="categoriesSearch" placeholder="Buscar categorias...">
+                    <div class="categories-container">
+                        <div class="categories-grid" id="categoriesGrid">
+                            <!-- Categorias serão carregadas dinamicamente aqui -->
+                        </div>
+                    </div>
+                    <div class="selected-categories" id="selectedCategories">
+                        <!-- Categorias selecionadas aparecerão aqui -->
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary" id="uploadBtn">Enviar Livro</button>
             </form>
@@ -762,6 +866,10 @@
         let totalPages = 1;
         let totalItems = 0;
         const booksPerPage = 12;
+        
+        // ========== CATEGORIAS ==========
+        let categories = {};
+        let selectedCategories = [];
 
         // ========== AUTENTICAÇÃO ==========
 
@@ -1075,6 +1183,91 @@
             }
         }
 
+        // ========== CATEGORIAS ==========
+
+        async function loadCategories() {
+            try {
+                // Tentar carregar categorias da API
+                if (typeof CategoryService !== 'undefined' && CategoryService.getCategories) {
+                    const response = await CategoryService.getCategories();
+                    if (response.success && response.data) {
+                        // A API retorna { Categories: [...] }
+                        categories = response.data.categories || response.data.Categories || [];
+                        console.log('Categorias carregadas:', categories);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+                showNotification('Erro ao carregar categorias', 'error');
+            }
+        }
+
+        function renderCategories() {
+            const categoriesGrid = document.getElementById('categoriesGrid');
+            const searchTerm = document.getElementById('categoriesSearch').value.toLowerCase();
+            
+            // Filtrar categorias baseado na busca
+            const filteredCategories = categories.filter(category => 
+                category.name.toLowerCase().includes(searchTerm)
+            );
+            
+            categoriesGrid.innerHTML = filteredCategories.map(category => {
+                const isSelected = selectedCategories.some(c => c.id === category.id);
+                
+                return `
+                    <div class="category-item ${isSelected ? 'selected' : ''}" 
+                         onclick="toggleCategory(${category.id}, '${escapeHtml(category.name)}')">
+                        <input type="checkbox" class="category-checkbox" 
+                               ${isSelected ? 'checked' : ''} 
+                               onchange="toggleCategory(${category.id}, '${escapeHtml(category.name)}')">
+                        <span class="category-label">${escapeHtml(category.name)}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            updateSelectedCategoriesDisplay();
+        }
+
+        function toggleCategory(id, name) {
+            const existingIndex = selectedCategories.findIndex(c => c.id === id);
+            
+            if (existingIndex >= 0) {
+                // Remover categoria se já estiver selecionada
+                selectedCategories.splice(existingIndex, 1);
+            } else {
+                // Adicionar categoria se não estiver selecionada
+                selectedCategories.push({ id, name });
+            }
+            
+            renderCategories();
+        }
+
+        function removeCategory(id) {
+            selectedCategories = selectedCategories.filter(c => c.id !== id);
+            renderCategories();
+        }
+
+        function updateSelectedCategoriesDisplay() {
+            const container = document.getElementById('selectedCategories');
+            
+            if (selectedCategories.length === 0) {
+                container.innerHTML = '<small style="color: #666;">Nenhuma categoria selecionada</small>';
+                return;
+            }
+            
+            container.innerHTML = selectedCategories.map(category => `
+                <div class="selected-category-tag">
+                    ${escapeHtml(category.name)}
+                    <button class="remove-category" onclick="removeCategory(${category.id})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function filterCategories() {
+            renderCategories();
+        }
+
         // ========== UPLOAD ==========
 
         function showUploadModal() {
@@ -1083,6 +1276,16 @@
                 showLoginModal();
                 return;
             }
+            
+            // Limpar seleções anteriores
+            selectedCategories = [];
+            document.getElementById('categoriesSearch').value = '';
+            
+            // Carregar e renderizar categorias
+            loadCategories().then(() => {
+                renderCategories();
+            });
+            
             document.getElementById('uploadModal').classList.add('show');
         }
 
@@ -1100,11 +1303,12 @@
             const description = document.getElementById('bookDescription').value;
             const file = document.getElementById('bookFile').files[0];
             const cover = document.getElementById('bookCover').files[0];
-            const categoriesInput = document.getElementById('bookCategories').value;
-            const categoriesIds = categoriesInput.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+            
+            // Obter IDs das categorias selecionadas
+            const categoriesIds = selectedCategories.map(c => c.id);
 
             if (categoriesIds.length === 0) {
-                showNotification('Por favor, informe pelo menos uma categoria válida', 'error');
+                showNotification('Por favor, selecione pelo menos uma categoria', 'error');
                 btn.disabled = false;
                 btn.textContent = 'Enviar Livro';
                 return;
@@ -1116,6 +1320,7 @@
                 showNotification('Livro enviado com sucesso!', 'success');
                 closeUploadModal();
                 event.target.reset();
+                selectedCategories = [];
                 loadBooks(1);
             } else {
                 showNotification(result.error || 'Erro ao enviar livro', 'error');
@@ -1179,6 +1384,9 @@
                     }, 500);
                 });
 
+                // Event listener para busca de categorias
+                document.getElementById('categoriesSearch').addEventListener('input', filterCategories);
+
                 document.querySelectorAll('.modal').forEach(modal => {
                     modal.addEventListener('click', (e) => {
                         if (e.target === modal) {
@@ -1187,7 +1395,7 @@
                     });
                 });
 
-                console.log('✅ BiblioLivre inicializado com sistema de paginação!');
+                console.log('✅ BiblioLivre inicializado com sistema de paginação e categorias!');
             };
 
             initApp();

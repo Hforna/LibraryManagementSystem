@@ -50,7 +50,7 @@ namespace LibraryApp.Application.Services
             if (titleExists)
                 throw new RequestException("Livro com mesmo nome ja existe");
 
-            var categories = await _uow.BookRepository.GetCategories(request.CategoriesIds);
+            var categories = await _uow.BookRepository.GetCategoriesByIds(request.CategoriesIds);
 
             if (categories.Count != request.CategoriesIds.Count)
                 throw new RequestException("Categorias fornecidas invalidas");
@@ -146,7 +146,7 @@ namespace LibraryApp.Application.Services
 
             if(request.CategoriesIds is not null && request.CategoriesIds.Any())
             {
-                var categories = await _uow.BookRepository.GetCategories(request.CategoriesIds);
+                var categories = await _uow.BookRepository.GetCategoriesByIds(request.CategoriesIds);
 
                 if (categories.Count != request.CategoriesIds.Count)
                     throw new RequestException("Categorias fornecidas invalidas");
