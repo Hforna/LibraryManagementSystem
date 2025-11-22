@@ -836,18 +836,18 @@
 
             if (user) {
                 userSection.innerHTML = `
-                        <a href="index.html" class="btn-back">← Voltar</a>
-                        <div class="user-info">
-                            <span>👤</span>
-                            <span>${escapeHtml(user.userName || user.email)}</span>
-                        </div>
-                        <button class="btn-logout" onclick="logout()">Sair</button>
-                    `;
+                                <a href="index.html" class="btn-back">← Voltar</a>
+                                <div class="user-info">
+                                    <span>👤</span>
+                                    <span>${escapeHtml(user.userName || user.email)}</span>
+                                </div>
+                                <button class="btn-logout" onclick="logout()">Sair</button>
+                            `;
             } else {
                 userSection.innerHTML = `
-                        <a href="index.html" class="btn-back">← Voltar</a>
-                        <button class="btn-logout" onclick="showLoginModal()">🔑 Entrar</button>
-                    `;
+                                <a href="index.html" class="btn-back">← Voltar</a>
+                                <button class="btn-logout" onclick="showLoginModal()">🔑 Entrar</button>
+                            `;
             }
         }
 
@@ -914,6 +914,11 @@
 
                 if (result.success && result.book) {
                     currentBook = result.book;
+
+                    // Log para debug - verificar dados do livro
+                    console.log('Livro carregado:', currentBook);
+                    console.log('URL do arquivo:', currentBook.fileUrl);
+
                     await checkIfLiked(bookId);
                     renderBookDetails(currentBook);
                     document.getElementById('commentsSection').style.display = 'block';
@@ -926,14 +931,14 @@
                 console.error('Erro ao carregar livro:', error);
                 showNotification('Erro ao carregar detalhes do livro', 'error');
                 document.getElementById('bookDetailsSection').innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📕</div>
-                            <p>Livro não encontrado</p>
-                            <button class="btn" style="background: #4a54e1; color: white; margin: 20px auto;" onclick="goToHome()">
-                                Voltar para Início
-                            </button>
-                        </div>
-                    `;
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📕</div>
+                                    <p>Livro não encontrado</p>
+                                    <button class="btn" style="background: #4a54e1; color: white; margin: 20px auto;" onclick="goToHome()">
+                                        Voltar para Início
+                                    </button>
+                                </div>
+                            `;
             }
         }
 
@@ -956,6 +961,7 @@
 
             let coverHtml;
             if (book.coverUrl) {
+                // Construir URL completa da capa
                 const imageUrl = book.coverUrl.startsWith('http')
                     ? book.coverUrl
                     : `https://localhost:5001${book.coverUrl}`;
@@ -974,56 +980,55 @@
                 ? book.categories.map(cat => typeof cat === 'string' ? cat : cat.name || cat)
                 : [];
 
+            // Verificar se o arquivo existe
+            const hasFile = book.fileUrl && book.fileUrl.trim() !== '';
+
             section.innerHTML = `
-                    <div class="book-content">
-                        <div class="book-cover-large">
-                            ${coverHtml}
-                        </div>
-
-                        <div class="book-info">
-                            <h1>${escapeHtml(book.title)}</h1>
-
-                            <div class="book-meta">
-                                <div class="book-meta-item">
-                                    <span>👤</span>
-                                    <span>por <strong>${escapeHtml(book.user?.userName || 'Autor Desconhecido')}</strong></span>
+                            <div class="book-content">
+                                <div class="book-cover-large">
+                                    ${coverHtml}
                                 </div>
-                                <div class="book-meta-item">
-                                    <span>📅</span>
-                                    <span>${uploadDate}</span>
+
+                                <div class="book-info">
+                                    <h1>${escapeHtml(book.title)}</h1>
+
+                                    <div class="book-meta">
+                                        <div class="book-meta-item">
+                                            <span>👤</span>
+                                            <span>por <strong>${escapeHtml(book.user?.userName || 'Autor Desconhecido')}</strong></span>
+                                        </div>
+                                        <div class="book-meta-item">
+                                            <span>📅</span>
+                                            <span>${uploadDate}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="book-categories">
+                                        ${categories.map(cat => `<span class="category-badge">${escapeHtml(cat)}</span>`).join('')}
+                                    </div>
+
+                                    <div class="book-description">
+                                        ${escapeHtml(book.description || 'Sem descrição disponível.')}
+                                    </div>
+
+                                    <div class="book-stats">
+                                        <div class="stat-item">
+                                            <div class="stat-number">${book.totalViews || 0}</div>
+                                            <div class="stat-label">Visualizações</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="book-actions">
+                                        <button class="btn btn-download" onclick="downloadBook()" ${!hasFile ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                                            📥 ${hasFile ? 'Baixar PDF' : 'Arquivo Indisponível'}
+                                        </button>
+                                        <button class="btn btn-like ${isLiked ? 'liked' : ''}" onclick="toggleLike()" id="btnLike">
+                                            ${isLiked ? '❤️' : '🤍'} ${isLiked ? 'Curtido' : 'Curtir'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="book-categories">
-                                ${categories.map(cat => `<span class="category-badge">${escapeHtml(cat)}</span>`).join('')}
-                            </div>
-
-                            <div class="book-description">
-                                ${escapeHtml(book.description || 'Sem descrição disponível.')}
-                            </div>
-
-                            <div class="book-stats">
-                                <div class="stat-item">
-                                    <div class="stat-number">${book.likesCount || 0}</div>
-                                    <div class="stat-label">Curtidas</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-number">${book.totalViews || 0}</div>
-                                    <div class="stat-label">Visualizações</div>
-                                </div>
-                            </div>
-
-                            <div class="book-actions">
-                                <button class="btn btn-download" onclick="downloadBook()">
-                                    📥 Baixar PDF
-                                </button>
-                                <button class="btn btn-like ${isLiked ? 'liked' : ''}" onclick="toggleLike()" id="btnLike">
-                                    ${isLiked ? '❤️' : '🤍'} ${isLiked ? 'Curtido' : 'Curtir'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                        `;
         }
 
         async function toggleLike() {
@@ -1066,10 +1071,31 @@
                 return;
             }
 
-            const fileUrl = currentBook.fileUrl;
+            try {
+                // Construir URL correta do arquivo
+                let fileUrl = currentBook.fileUrl;
 
-            window.open(fileUrl, '_blank');
-            showNotification('Download iniciado...', 'success');
+                // Se a URL não começar com http/https, adicionar o prefixo da API
+                if (!fileUrl.startsWith('http')) {
+                    fileUrl = `https://localhost:5001${fileUrl}`;
+                }
+
+                // Criar link temporário para download
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.target = '_blank';
+                link.download = `${currentBook.title}.pdf`; // Nome sugerido para o arquivo
+
+                // Adicionar ao DOM, clicar e remover
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showNotification('Download iniciado...', 'success');
+            } catch (error) {
+                console.error('Erro ao fazer download:', error);
+                showNotification('Erro ao iniciar download', 'error');
+            }
         }
 
         // ========== COMENTÁRIOS ==========
@@ -1151,11 +1177,11 @@
             } catch (error) {
                 console.error('Erro ao carregar comentários:', error);
                 commentsList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
-                        </div>
-                    `;
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">💬</div>
+                                    <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+                                </div>
+                            `;
             }
         }
 
@@ -1165,11 +1191,11 @@
 
             if (!comments || comments.length === 0) {
                 commentsList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
-                        </div>
-                    `;
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">💬</div>
+                                    <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+                                </div>
+                            `;
                 return;
             }
 
@@ -1186,20 +1212,20 @@
                 const canDelete = currentUser && currentUser.userId === comment.userId;
 
                 return `
-                        <div class="comment-card">
-                            <div class="comment-header">
-                                <div class="comment-author">
-                                    <div class="author-avatar">${authorInitial}</div>
-                                    <div class="author-info">
-                                        <div class="author-name">${escapeHtml(comment.user?.userName || 'Usuário')}</div>
-                                        <div class="comment-date">${commentDate}</div>
+                                <div class="comment-card">
+                                    <div class="comment-header">
+                                        <div class="comment-author">
+                                            <div class="author-avatar">${authorInitial}</div>
+                                            <div class="author-info">
+                                                <div class="author-name">${escapeHtml(comment.user?.userName || 'Usuário')}</div>
+                                                <div class="comment-date">${commentDate}</div>
+                                            </div>
+                                        </div>
+                                        ${canDelete ? `<button class="btn-delete-comment" onclick="deleteComment(${comment.id})">🗑️ Deletar</button>` : ''}
                                     </div>
+                                    <div class="comment-text">${escapeHtml(comment.content)}</div>
                                 </div>
-                                ${canDelete ? `<button class="btn-delete-comment" onclick="deleteComment(${comment.id})">🗑️ Deletar</button>` : ''}
-                            </div>
-                            <div class="comment-text">${escapeHtml(comment.content)}</div>
-                        </div>
-                    `;
+                            `;
             }).join('');
         }
 

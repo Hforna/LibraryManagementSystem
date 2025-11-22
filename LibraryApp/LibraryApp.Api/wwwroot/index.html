@@ -1032,7 +1032,7 @@
             );
 
             grid.innerHTML = booksWithDetails.map(book => {
-                const isLiked = BookService.userLikedBook(book.id);
+                const isLiked = await BookService.userLikedBook(book.id);
 
                 // Construir URL da capa corretamente
                 let coverImageHtml;
@@ -1173,13 +1173,7 @@
         }
 
         function readBook(bookId) {
-            const book = currentBooks.find(b => b.id === bookId);
-            if (book && book.fileUrl) {
-                window.open(book.fileUrl, '_blank');
-                showNotification('Abrindo livro...', 'info');
-            } else {
-                showNotification('Arquivo do livro não disponível', 'error');
-            }
+            window.location.href = `full-book.html?id=${bookId}`;
         }
 
         // ========== CATEGORIAS ==========
