@@ -20,6 +20,7 @@ namespace LibraryApp.Application.Services
         public Task DeleteBook(long bookId);
         public Task LikeBook(long bookId);
         public Task UnlikeBook(long bookId);
+        public Task<bool> UserLikedBook(long bookId); 
     }
 
     public class BookService : IBookService
@@ -273,6 +274,15 @@ namespace LibraryApp.Application.Services
             response.Books = booksList.ToList();
 
             return response;
+        }
+
+        public async Task<bool> UserLikedBook(long bookId)
+        {
+            var user = await _tokenService.GetUserByToken();
+
+            if (user is null) return false;
+
+            return await _uow.BookRepository.UserLikedBook(user.Id, bookId);
         }
     }
 }

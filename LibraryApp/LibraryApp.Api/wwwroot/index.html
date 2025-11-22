@@ -1032,7 +1032,7 @@
             );
 
             grid.innerHTML = booksWithDetails.map(book => {
-                const isLiked = likedBooks.has(book.id);
+                const isLiked = BookService.userLikedBook(book.id);
 
                 // Construir URL da capa corretamente
                 let coverImageHtml;
@@ -1041,8 +1041,7 @@
                     const imageUrl = book.coverUrl;
 
                     coverImageHtml = `<img src="${escapeHtml(imageUrl)}"
-                                               alt="${escapeHtml(book.title)}"
-                                               onerror="this.parentElement.innerHTML='📖'">`;
+                                               alt="${escapeHtml(book.title)}">`;
                 } else {
                     coverImageHtml = '📖';
                 }

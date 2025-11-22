@@ -30,7 +30,7 @@ namespace LibraryApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateBook([FromForm] BookRequest request)
         {
-             var result = await _bookService.CreateBook(request);
+            var result = await _bookService.CreateBook(request);
             return Ok(result);
         }
 
@@ -177,6 +177,14 @@ namespace LibraryApp.Api.Controllers
         {
             await _bookService.UnlikeBook(bookId);
             return Ok();
+        }
+
+        [HttpGet("{bookId}/liked")]
+        public async Task<IActionResult> UserLikedBook([FromRoute]long bookId)
+        {
+            var result = await _bookService.UserLikedBook(bookId);
+
+            return Ok(result);
         }
     }
 }

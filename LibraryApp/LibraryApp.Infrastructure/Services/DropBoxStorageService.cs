@@ -23,15 +23,8 @@ namespace LibraryApp.Infrastructure.Services
             using var client = new DropboxClient(_accessToken);
             try
             {
-                var list = await client.Sharing.ListSharedLinksAsync($"{BaseFilePath}{fileName}", directOnly: true);
-                if (list.Links.Any())
-                {
-                    return list.Links.FirstOrDefault()!.Url.Replace("?dl=0", "?raw=1");
-                }else
-                {
-                    var link = await client.Sharing.CreateSharedLinkWithSettingsAsync($"{BaseFilePath}{fileName}");
-                    return link.Url.Replace("?dl=0", "?raw=1");
-                }
+                var link = await client.Files.GetTemporaryLinkAsync($"{BaseFilePath}{fileName}");
+                return link.Link.Replace("?dl=0", "?raw=1");
             }catch (Exception ex)
             {
                 return "";

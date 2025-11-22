@@ -35,6 +35,7 @@ const API_CONFIG = {
         // Likes
         likeBook: (bookId) => `/books/${bookId}/like`,
         unlikeBook: (bookId) => `/books/${bookId}/unlike`
+        likedBook: (bookId) => '/books/${bookId}/liked'
     },
     storage: {
         accessToken: 'access_token',
@@ -408,6 +409,16 @@ class BookService {
                 { skipAuth: true }
             );
             return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async userLikedBook(bookId) {
+        try {
+            var response = ApiClient.get(API_CONFIG.endpoints.userLikedBook(bookId),
+                { skipAuth = true });
+            return { success = true, data: response.data }
         } catch (error) {
             return { success: false, error: error.message };
         }
