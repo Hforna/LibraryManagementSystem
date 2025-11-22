@@ -1,31 +1,17 @@
-/*
- * BIBLIOTECA VIRTUAL - SISTEMA DE AUTENTICAÇÃO
- * Arquivo responsável por todas as funcionalidades de login, cadastro e perfil
- * Inclui: autenticação, validação, recuperação de senha e gerenciamento de perfil
- */
-
-// ===========================================
 // CONTROLE DE MODAIS
-// ===========================================
 
-/**
- * Exibe o modal de login/cadastro
- */
+//Exibe o modal de login/cadastro
 function showLoginModal() {
     document.getElementById('authModal').classList.add('show');
 }
 
-/**
- * Fecha o modal de login/cadastro
- */
+//Fecha o modal de login/cadastro
 function closeAuthModal() {
     document.getElementById('authModal').classList.remove('show');
     clearAuthForms();
 }
 
-/**
- * Limpa todos os formulários de autenticação
- */
+//Limpa todos os formulários de autenticação
 function clearAuthForms() {
     // Limpar formulário de login
     document.getElementById('loginCredential').value = '';
@@ -41,9 +27,9 @@ function clearAuthForms() {
     document.getElementById('forgotEmail').value = '';
 }
 
-/**
+/*
  * Alterna entre formulários de login, cadastro e recuperação
- * @param {string} formType - Tipo do formulário ('login', 'register', 'forgot')
+ * Tipo do formulário ('login', 'register', 'forgot')
  */
 function showAuthForm(formType) {
     // Remover classes ativas de todas as abas e formulários
@@ -62,13 +48,10 @@ function showAuthForm(formType) {
     }
 }
 
-// ===========================================
-// SISTEMA DE LOGIN
-// ===========================================
-
-/**
- * Processa o login do usuário
- * Aceita tanto nick quanto e-mail como credencial
+/*
+SISTEMA DE LOGIN
+Processa o login do usuário
+Aceita tanto nick quanto e-mail como credencial
  */
 function login() {
     const credential = document.getElementById('loginCredential').value.trim();
@@ -114,8 +97,8 @@ function login() {
 
 /**
  * Cria sessão do usuário com dados completos
- * @param {Object} userData - Dados do usuário
- * @returns {Object} Objeto completo do usuário
+ userData - Dados do usuário
+ Objeto completo do usuário
  */
 function createUserSession(userData) {
     return {

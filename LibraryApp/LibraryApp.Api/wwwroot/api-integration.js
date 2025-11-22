@@ -1,12 +1,4 @@
-/*
- * BIBLIOTECA VIRTUAL - INTEGRAÇÃO COM API BACKEND
- * Conecta o frontend com a API .NET em https://localhost:5001
- * Gerencia: autenticação JWT, refresh tokens, chamadas HTTP
- */
-
-// ===========================================
 // CONFIGURAÇÃO DA API
-// ===========================================
 
 const API_CONFIG = {
     baseURL: '/api',
@@ -35,7 +27,6 @@ const API_CONFIG = {
         // Likes
         likeBook: (bookId) => `/books/${bookId}/like`,
         unlikeBook: (bookId) => `/books/${bookId}/unlike`,
-        likedBook: (bookId) => `/books/${bookId}/liked`,
     },
     storage: {
         accessToken: 'access_token',
@@ -45,9 +36,7 @@ const API_CONFIG = {
     }
 };
 
-// ===========================================
 // CLASSE DE GERENCIAMENTO DE TOKENS
-// ===========================================
 
 class TokenManager {
     static saveTokens(accessToken, refreshToken, refreshExpiration) {
@@ -90,9 +79,7 @@ class TokenManager {
     }
 }
 
-// ===========================================
 // CLIENTE HTTP COM INTERCEPTORS
-// ===========================================
 
 class ApiClient {
     static async request(endpoint, options = {}) {
@@ -242,9 +229,7 @@ class ApiClient {
     }
 }
 
-// ===========================================
 // SERVIÇO DE AUTENTICAÇÃO
-// ===========================================
 
 class AuthService {
     static async login(email, password) {
@@ -391,16 +376,13 @@ class CategoryService {
     }
 }
 
-// ===========================================
 // SERVIÇO DE LIVROS
-// ===========================================
 
 class BookService {
     /**
      * Busca livros com paginação
-     * @param {number} page - Número da página (começa em 1)
-     * @param {number} perPage - Quantidade de livros por página
-     * @returns {Promise<Object>} Resposta paginada com livros
+     * page - Número da página (começa em 1)
+     * perPage - Quantidade de livros por página
      */
     static async getBooksPaginated(page = 1, perPage = 12) {
         try {
@@ -416,9 +398,9 @@ class BookService {
 
     static async userLikedBook(bookId) {
         try {
-            var response = ApiClient.get(API_CONFIG.endpoints.userLikedBook(bookId),
-                { skipAuth = true });
-            return { success = true, data: response.data }
+            var response = ApiClient.get(`/books/${bookId}/liked`,
+                { skipAuth: false });
+            return { success: true, data: response.data }
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -513,9 +495,7 @@ class BookService {
     }
 }
 
-// ===========================================
 // SERVIÇO DE COMENTÁRIOS
-// ===========================================
 
 class CommentService {
     static async getBookComments(bookId, page = 1, perPage = 10) {
@@ -562,9 +542,7 @@ class CommentService {
     }
 }
 
-// ===========================================
 // INICIALIZAÇÃO E VERIFICAÇÕES
-// ===========================================
 
 function initializeAuth() {
     console.log('🔐 Inicializando sistema de autenticação...');
@@ -626,9 +604,7 @@ async function handleEmailConfirmation(email, token) {
     }
 }
 
-// ===========================================
 // EXPORTAR PARA ESCOPO GLOBAL
-// ===========================================
 
 window.API_CONFIG = API_CONFIG;
 window.TokenManager = TokenManager;
