@@ -34,8 +34,8 @@ const API_CONFIG = {
         
         // Likes
         likeBook: (bookId) => `/books/${bookId}/like`,
-        unlikeBook: (bookId) => `/books/${bookId}/unlike`
-        likedBook: (bookId) => '/books/${bookId}/liked'
+        unlikeBook: (bookId) => `/books/${bookId}/unlike`,
+        likedBook: (bookId) => `/books/${bookId}/liked`,
     },
     storage: {
         accessToken: 'access_token',
