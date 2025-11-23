@@ -45,6 +45,7 @@ public class BookRepository : IBookRepository
     {
         return await _context.Books
             .AsNoTracking()
+            .Include(d => d.User)
             .Include(d => d.BookCategories)
             .ThenInclude(d => d.Category)
             .Include(d => d.Likes)
@@ -68,8 +69,15 @@ public class BookRepository : IBookRepository
     public async Task<Pagination<Book>> GetBooksPaginated(int page, int perPage)
     {
         return await _context.Books
+            .Include(d => d.User)
+            .Include(d => d.Views)
             .AsNoTracking()
             .OrderBy(d => d.Id)
             .AsPaginationAsync(page, perPage);
+    }
+
+    public async Task<int> GetTotalViewsOfABook(long bookId)
+    {
+        return await _context.Views.Where(d => d.BookId == bookId).CountAsync();
     }
 }

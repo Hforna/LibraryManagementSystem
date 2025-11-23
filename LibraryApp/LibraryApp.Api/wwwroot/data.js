@@ -9,7 +9,7 @@
 // ===========================================
 
 const appConfig = {
-    name: "BiblioLivre",
+    name: "O Caminho do Saber",
     version: "2.0.0",
     description: "Biblioteca Digital Gratuita",
     maxFileSize: 50 * 1024 * 1024, // 50MB em bytes
@@ -26,7 +26,7 @@ const appConfig = {
 // ===========================================
 
 const messages = {
-    welcome: "Bem-vindo à BiblioLivre!",
+    welcome: "Bem-vindo à O Caminho do Saber!",
     loginSuccess: "Login realizado com sucesso!",
     registerSuccess: "Cadastro realizado com sucesso!",
     logoutConfirm: "Tem certeza que deseja sair?",
@@ -455,7 +455,7 @@ function devLog(message, type = 'info') {
             warn: 'color: #f39c12',
             error: 'color: #e74c3c'
         };
-        console.log(`%c[BiblioLivre] ${message}`, styles[type] || styles.info);
+        console.log(`%c[O Caminho do Saber] ${message}`, styles[type] || styles.info);
     }
 }
 

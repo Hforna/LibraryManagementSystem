@@ -15,4 +15,5 @@ public interface IBookRepository
     public Task<bool> UserLikedBook(long userId, long bookId);
     public Task<Like?> GetLikeByUserAndBook(long userId, long bookId);
     public Task<Pagination<Book>> GetBooksPaginated(int page, int perPage);
+    public Task<int> GetTotalViewsOfABook(long bookId);
 }

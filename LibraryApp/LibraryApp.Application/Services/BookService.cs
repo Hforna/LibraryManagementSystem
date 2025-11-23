@@ -124,6 +124,7 @@ namespace LibraryApp.Application.Services
             response.TotalViews = book.Views.Count;
             response.CoverUrl = string.IsNullOrEmpty(book.CoverName) ? "" : await _storageService.GetFileUrl(book.CoverName, book.Title);
             response.FileUrl = await _storageService.GetFileUrl(book.FileName, book.Title);
+            response.AuthorName = book.User.UserName;
 
             return response;
         }
@@ -194,6 +195,7 @@ namespace LibraryApp.Application.Services
             response.TotalViews = book.Views.Count;
             response.CoverUrl = string.IsNullOrEmpty(book.CoverName) ? "" : await _storageService.GetFileUrl(book.CoverName, book.Title);
             response.FileUrl = await _storageService.GetFileUrl(book.FileName, book.Title);
+            response.AuthorName = book.User.UserName;
 
             return response;
         }
@@ -265,6 +267,8 @@ namespace LibraryApp.Application.Services
             {
                 var response = _mapper.Map<BookShortResponse>(book);
                 response.CoverUrl = string.IsNullOrEmpty(book.CoverName) ? "" : await _storageService.GetFileUrl(book.FileName, book.Title);
+                response.AuthorName = book.User.UserName;
+                response.ViewsCount = book.Views.Count;
 
                 return response;
             });

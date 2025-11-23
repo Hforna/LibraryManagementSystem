@@ -24,6 +24,7 @@ namespace LibraryApp.Infrastructure.Services
             try
             {
                 var link = await client.Files.GetTemporaryLinkAsync($"{BaseFilePath}{fileName}");
+
                 return link.Link.Replace("?dl=0", "?raw=1");
             }catch (Exception ex)
             {
@@ -40,7 +41,7 @@ namespace LibraryApp.Infrastructure.Services
         public async Task UploadFile(Stream file, string fileName)
         {
             using var client = new DropboxClient(_accessToken);
-            await client.Files.UploadAsync(
+            var result = await client.Files.UploadAsync(
                 path: $"{BaseFilePath}{fileName}",
                 mode: WriteMode.Overwrite.Instance,
                 body: file);

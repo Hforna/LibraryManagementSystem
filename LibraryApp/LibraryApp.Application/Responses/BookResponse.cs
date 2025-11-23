@@ -15,6 +15,7 @@ namespace LibraryApp.Application.Responses
         public string Description { get; set; }
         public string FileUrl { get; set; }
         public string CoverUrl { get; set; }
+        public string AuthorName { get; set; }
         public List<string> Categories { get; set; } = [];
         public int LikesCount { get; set; } = 0;
         public int TotalViews { get; set; } = 0;
@@ -24,8 +25,10 @@ namespace LibraryApp.Application.Responses
     public class BookShortResponse
     {
         public long Id { get; set; }
+        public string AuthorName { get; set; }
         public string CoverUrl { get; set; }
         public string Title { get; set; }
+        public int ViewsCount { get; set; }
     }
 
     public class BooksPaginatedResponse

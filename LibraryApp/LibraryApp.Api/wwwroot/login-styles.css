@@ -1,12 +1,5 @@
-/*
- * BIBLIOTECA VIRTUAL - ESTILOS DA TELA DE LOGIN
- * Design moderno e atrativo para autenticação
- * Inclui: animações, gradientes, responsividade
- */
+/* RESET E CONFIGURAÇÕES BÁSICAS */
 
-/* ===========================================
-   RESET E CONFIGURAÇÕES BÁSICAS
-   ========================================== */
 
 * {
     margin: 0;
@@ -22,9 +15,7 @@ body {
     position: relative;
 }
 
-/* ===========================================
-   FUNDO ANIMADO
-   ========================================== */
+ /* FUNDO ANIMADO */
 
 .animated-background {
     position: fixed;
@@ -59,9 +50,7 @@ body {
     100% { transform: translateY(0px) rotate(0deg); }
 }
 
-/* ===========================================
-   LAYOUT PRINCIPAL
-   ========================================== */
+/* LAYOUT PRINCIPAL */
 
 .login-container {
     display: flex;
@@ -73,8 +62,8 @@ body {
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
 }
 
-/* ===========================================
-   SEÇÃO DE BRANDING
+/*
+ SEÇÃO DE BRANDING
    ========================================== */
 
 .brand-section {

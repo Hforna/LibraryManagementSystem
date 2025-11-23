@@ -34,6 +34,7 @@ namespace LibraryApp.Api.Controllers
             return Ok(result);
         }
 
+
         /// <summary>
         /// Recupera um livro específico pelo seu identificador único.
         /// </summary>

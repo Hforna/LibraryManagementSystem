@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes do Livro - BiblioLivre</title>
+    <title>Detalhes do Livro - O Caminho do Saber</title>
     <style>
         * {
             margin: 0;
@@ -705,7 +705,7 @@
             <div class="header-top">
                 <div class="logo-section" onclick="goToHome()">
                     <div class="logo">📚</div>
-                    <div class="logo-text">BiblioLivre</div>
+                    <div class="logo-text">O Caminho do Saber</div>
                 </div>
 
                 <div class="user-section" id="userSection">
@@ -798,7 +798,6 @@
         let currentCommentsPage = 1;
         let totalCommentsPages = 1;
         const commentsPerPage = 10;
-        let isLiked = false;
 
         // ========== UTILS ==========
 
@@ -995,7 +994,7 @@
                                     <div class="book-meta">
                                         <div class="book-meta-item">
                                             <span>👤</span>
-                                            <span>por <strong>${escapeHtml(book.user?.userName || 'Autor Desconhecido')}</strong></span>
+                                            <span>por <strong>${escapeHtml(book.authorName || 'Autor Desconhecido')}</strong></span>
                                         </div>
                                         <div class="book-meta-item">
                                             <span>📅</span>

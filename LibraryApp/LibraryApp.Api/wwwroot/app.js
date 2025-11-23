@@ -3,7 +3,7 @@
 //Função principal de inicialização que executa quando a aplicação carrega
 
 function init() {
-    console.log('🚀 Iniciando BiblioLivre...');
+    console.log('🚀 Iniciando O Caminho do Saber...');
     
     // Carregar dados iniciais
     books = [...sampleBooks];
@@ -28,7 +28,7 @@ function init() {
     // Mostrar informações de desenvolvimento no console
     showDevInfo();
     
-    console.log('✅ BiblioLivre iniciado com sucesso!');
+    console.log('✅ O Caminho do Saber iniciado com sucesso!');
 }
 
 //Configura todos os event listeners da aplicação

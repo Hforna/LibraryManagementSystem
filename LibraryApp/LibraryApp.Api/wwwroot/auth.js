@@ -169,7 +169,7 @@ function register() {
     updateAuthUI();
     closeAuthModal();
     updateProfileData();
-    alert(`${messages.registerSuccess} Bem-vindo(a) à BiblioLivre, ${nick}!`);
+    alert(`${messages.registerSuccess} Bem-vindo(a) à O Caminho do Saber, ${nick}!`);
 }
 
 /**
