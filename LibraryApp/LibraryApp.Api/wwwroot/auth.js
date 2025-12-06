@@ -1,22 +1,20 @@
-// CONTROLE DE MODAIS
-
-//Exibe o modal de login/cadastro
+// Exibe o modal de login/cadastro
 function showLoginModal() {
     document.getElementById('authModal').classList.add('show');
 }
 
-//Fecha o modal de login/cadastro
+// Fecha o modal de login/cadastro
 function closeAuthModal() {
     document.getElementById('authModal').classList.remove('show');
     clearAuthForms();
 }
 
-//Limpa todos os formulários de autenticação
+// Limpa todos os formulários de autenticação
 function clearAuthForms() {
     // Limpar formulário de login
     document.getElementById('loginCredential').value = '';
     document.getElementById('loginPassword').value = '';
-    
+     
     // Limpar formulário de cadastro
     document.getElementById('registerNick').value = '';
     document.getElementById('registerEmail').value = '';
@@ -27,10 +25,8 @@ function clearAuthForms() {
     document.getElementById('forgotEmail').value = '';
 }
 
-/*
- * Alterna entre formulários de login, cadastro e recuperação
- * Tipo do formulário ('login', 'register', 'forgot')
- */
+
+// Alterna entre formulários de login, cadastro e recuperação
 function showAuthForm(formType) {
     // Remover classes ativas de todas as abas e formulários
     document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
@@ -48,11 +44,7 @@ function showAuthForm(formType) {
     }
 }
 
-/*
-SISTEMA DE LOGIN
-Processa o login do usuário
-Aceita tanto nick quanto e-mail como credencial
- */
+// Processo de login, aceita email ou nick
 function login() {
     const credential = document.getElementById('loginCredential').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -95,11 +87,7 @@ function login() {
     updateProfileData();
 }
 
-/**
- * Cria sessão do usuário com dados completos
- userData - Dados do usuário
- Objeto completo do usuário
- */
+// Cria sessão do usuario com dados do usuario
 function createUserSession(userData) {
     return {
         name: userData.nick,
@@ -111,13 +99,7 @@ function createUserSession(userData) {
     };
 }
 
-// ===========================================
-// SISTEMA DE CADASTRO
-// ===========================================
-
-/**
- * Processa o cadastro de novo usuário
- */
+// Processa o cadastro de novo usuário
 function register() {
     const nick = document.getElementById('registerNick').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
@@ -172,35 +154,21 @@ function register() {
     alert(`${messages.registerSuccess} Bem-vindo(a) à O Caminho do Saber, ${nick}!`);
 }
 
-/**
- * Verifica se nick já está em uso
- * @param {string} nick - Nick para verificar
- * @returns {boolean} True se já existe
- */
+// Verifica se já existe
 function isNickTaken(nick) {
     return usersDatabase.some(user => 
         user.nick.toLowerCase() === nick.toLowerCase()
     );
 }
 
-/**
- * Verifica se email já está cadastrado
- * @param {string} email - Email para verificar
- * @returns {boolean} True se já existe
- */
+// Verifica se o email ja existe
 function isEmailTaken(email) {
     return usersDatabase.some(user => 
         user.email.toLowerCase() === email.toLowerCase()
     );
 }
 
-// ===========================================
-// LOGIN SOCIAL (SIMULADO)
-// ===========================================
-
-/**
- * Simula login com Google
- */
+// Simula login do google
 function loginWithGoogle() {
     const googleUser = {
         nick: 'GoogleUser',
@@ -217,9 +185,7 @@ function loginWithGoogle() {
     alert('Login com Google realizado com sucesso!');
 }
 
-/**
- * Simula login com Facebook
- */
+// Simula login do facebook
 function loginWithFacebook() {
     const facebookUser = {
         nick: 'FacebookUser',
@@ -236,34 +202,22 @@ function loginWithFacebook() {
     alert('Login com Facebook realizado com sucesso!');
 }
 
-/**
- * Simula cadastro com Google
- */
+// Simula cadastro do google
 function registerWithGoogle() {
     loginWithGoogle(); // Mesmo processo para demonstração
 }
 
-/**
- * Simula cadastro com Facebook
- */
+// Simula cadastro do facebook
 function registerWithFacebook() {
     loginWithFacebook(); // Mesmo processo para demonstração
 }
 
-// ===========================================
-// RECUPERAÇÃO DE SENHA
-// ===========================================
-
-/**
- * Exibe formulário de recuperação de senha
- */
+// Exibe formularui de recuperação de senha
 function showForgotPassword() {
     showAuthForm('forgot');
 }
 
-/**
- * Processa recuperação de senha
- */
+// Processo de recuperação de senha
 function resetPassword() {
     const credential = document.getElementById('forgotEmail').value.trim();
     
@@ -290,13 +244,7 @@ function resetPassword() {
     document.getElementById('forgotEmail').value = '';
 }
 
-// ===========================================
-// LOGOUT E CONTROLE DE SESSÃO
-// ===========================================
-
-/**
- * Faz logout do usuário
- */
+// Faz logout do usuário
 function logout() {
     if (confirm(messages.logoutConfirm)) {
         currentUser = null;
@@ -313,9 +261,7 @@ function logout() {
     }
 }
 
-/**
- * Atualiza interface baseada no estado de autenticação
- */
+// Atualiza a interface de autenticação
 function updateAuthUI() {
     const loginBtn = document.getElementById('loginBtn');
     const userInfo = document.getElementById('userInfo');
@@ -336,22 +282,13 @@ function updateAuthUI() {
     }
 }
 
-/**
- * Verifica estado de autenticação na inicialização
- */
+// Verifica autenticação da inicialização
 function checkAuthState() {
-    // Em um sistema real, verificaria cookies/tokens aqui
-    // Para demonstração, mantém estado vazio
+    // Verificaria cookies/tokens aqui, para demonstração, mantém estado vazio
     updateAuthUI();
 }
 
-// ===========================================
-// GERENCIAMENTO DE PERFIL
-// ===========================================
-
-/**
- * Exibe modal de edição de perfil
- */
+// Exibe modal de edição de perfil
 function showEditProfile() {
     if (!currentUser) return;
 
@@ -364,9 +301,7 @@ function showEditProfile() {
     document.getElementById('editProfileModal').classList.add('show');
 }
 
-/**
- * Fecha modal de edição de perfil
- */
+// Fecha modal de edição do usuário
 function closeEditProfile() {
     document.getElementById('editProfileModal').classList.remove('show');
     
@@ -376,9 +311,7 @@ function closeEditProfile() {
     document.getElementById('confirmNewPassword').value = '';
 }
 
-/**
- * Atualiza dados do perfil do usuário
- */
+// Atualiza perfil do usuário
 function updateProfile() {
     const nick = document.getElementById('editName').value.trim();
     const email = document.getElementById('editEmail').value.trim();
@@ -438,15 +371,7 @@ function updateProfile() {
     alert(messages.profileUpdated);
 }
 
-// ===========================================
-// VALIDAÇÃO DE RECURSOS PROTEGIDOS
-// ===========================================
-
-/**
- * Verifica se usuário está logado para acessar recurso
- * @param {string} action - Nome da ação sendo executada
- * @returns {boolean} True se autorizado
- */
+// Verifica se o usuário esta logado para acessar
 function requireLogin(action = 'acessar este recurso') {
     if (!currentUser) {
         alert(`Por favor, faça login para ${action}.`);

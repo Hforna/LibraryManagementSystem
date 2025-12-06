@@ -1,12 +1,4 @@
-/*
- * BIBLIOTECA VIRTUAL - JAVASCRIPT DA TELA DE LOGIN (API REAL)
- * Integrado com backend .NET em https://localhost:5001
- */
-
-// ===========================================
-// CONTROLE DE FORMULÁRIOS
-// ===========================================
-
+//controle de formulários
 function showAuthForm(formType) {
     document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
@@ -26,10 +18,7 @@ function showForgotPassword() {
     showAuthForm('forgot');
 }
 
-// ===========================================
-// SISTEMA DE LOGIN (API REAL)
-// ===========================================
-
+//sistema de login
 async function login(event) {
     event.preventDefault();
     

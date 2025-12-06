@@ -1,17 +1,4 @@
-/*
- * BIBLIOTECA VIRTUAL - INTERFACE E INTERAÇÕES
- * Arquivo responsável por toda a interface do usuário e interações
- * Inclui: renderização, navegação, busca, leitor e perfil
- */
-
-// ===========================================
-// SISTEMA DE NAVEGAÇÃO POR ABAS
-// ===========================================
-
-/**
- * Controla a navegação entre as diferentes seções
- * @param {string} tabName - Nome da aba a ser exibida
- */
+// Controle de navegação entre as diferentes seções
 function showTab(tabName) {
     // Esconder todos os conteúdos
     document.querySelectorAll('.tab-content').forEach(content => {
@@ -50,14 +37,7 @@ function showTab(tabName) {
     }
 }
 
-// ===========================================
-// RENDERIZAÇÃO DE LIVROS
-// ===========================================
-
-/**
- * Renderiza grid de livros na interface
- * @param {Array} booksToRender - Array de livros para renderizar
- */
+// Renderiza grade de livros no site
 function renderBooks(booksToRender) {
     const grid = document.getElementById('booksGrid');
     
@@ -69,11 +49,7 @@ function renderBooks(booksToRender) {
     grid.innerHTML = booksToRender.map(book => createBookCard(book)).join('');
 }
 
-/**
- * Cria o HTML de um card de livro
- * @param {Object} book - Dados do livro
- * @returns {string} HTML do card
- */
+// Cria o html de um card de livro
 function createBookCard(book) {
     const isFavorite = favorites.has(book.id);
     const favoriteIcon = isFavorite ? '❤️' : '🤍';
@@ -98,9 +74,7 @@ function createBookCard(book) {
     `;
 }
 
-/**
- * Renderiza livros favoritos
- */
+// Renderiza livros faviritso
 function renderFavorites() {
     const favoriteBooks = books.filter(book => favorites.has(book.id));
     const grid = document.getElementById('favoritesGrid');
@@ -112,9 +86,7 @@ function renderFavorites() {
     }
 }
 
-/**
- * Renderiza livros sendo lidos atualmente
- */
+// Renderiza livros sendo lidos atualmente
 function renderCurrentlyReading() {
     const readingBooks = books.filter(book => currentlyReading.has(book.id));
     const grid = document.getElementById('readingGrid');
@@ -126,11 +98,7 @@ function renderCurrentlyReading() {
     }
 }
 
-/**
- * Cria card especial para livros em leitura
- * @param {Object} book - Dados do livro
- * @returns {string} HTML do card
- */
+//Cria card especial para livros em leitura
 function createReadingBookCard(book) {
     return `
         <div class="book-card" data-book-id="${book.id}">
@@ -149,23 +117,13 @@ function createReadingBookCard(book) {
     `;
 }
 
-// ===========================================
-// RENDERIZAÇÃO DE CATEGORIAS
-// ===========================================
-
-/**
- * Renderiza grid de categorias
- */
+// Renderiza grade de categorias
 function renderCategories() {
     const grid = document.getElementById('categoriesGrid');
     grid.innerHTML = categories.map(category => createCategoryCard(category)).join('');
 }
 
-/**
- * Cria card de categoria
- * @param {Object} category - Dados da categoria
- * @returns {string} HTML do card
- */
+//Cria card de categoria
 function createCategoryCard(category) {
     return `
         <div class="category-card" onclick="filterByCategory('${category.name}')" 
@@ -177,13 +135,7 @@ function createCategoryCard(category) {
     `;
 }
 
-// ===========================================
-// SISTEMA DE BUSCA
-// ===========================================
-
-/**
- * Executa busca de livros
- */
+// Executa busca por livros
 function searchBooks() {
     const query = document.getElementById('searchInput').value.trim();
     
@@ -209,10 +161,7 @@ function searchBooks() {
     }, 1000);
 }
 
-/**
- * Filtra livros por categoria
- * @param {string} categoryName - Nome da categoria
- */
+// Filtra livros por categoria
 function filterByCategory(categoryName) {
     const filtered = getBooksByCategory(categoryName);
     renderBooks(filtered);
@@ -227,14 +176,7 @@ function filterByCategory(categoryName) {
     }
 }
 
-// ===========================================
-// SISTEMA DE FAVORITOS
-// ===========================================
-
-/**
- * Alterna status de favorito de um livro
- * @param {number} bookId - ID do livro
- */
+// Altera status de favorito de um livro
 function toggleFavorite(bookId) {
     if (!requireLogin('favoritar livros')) {
         return;
@@ -256,14 +198,7 @@ function toggleFavorite(bookId) {
     updateProfileData();
 }
 
-// ===========================================
-// LEITOR INTEGRADO
-// ===========================================
-
-/**
- * Abre o leitor para um livro específico
- * @param {number} bookId - ID do livro
- */
+//Abre o leitor para um livro especifico
 function readBook(bookId) {
     const book = books.find(b => b.id === bookId);
     if (!book) return;
@@ -301,18 +236,13 @@ function readBook(bookId) {
     showNotification(`Iniciando leitura: "${book.title}"`, 'success');
 }
 
-/**
- * Fecha o leitor
- */
+// Fecha o leitor
 function closeReader() {
     document.getElementById('readerContainer').style.display = 'none';
     document.querySelector('.content-section').style.display = 'block';
 }
 
-/**
- * Altera tamanho da fonte no leitor
- * @param {number} delta - Variação do tamanho (-1 ou +1)
- */
+//Altera o tamanho da fonte no leitor
 function changeTextSize(delta) {
     currentFontSize += delta * 2;
     currentFontSize = Math.max(12, Math.min(24, currentFontSize));
@@ -325,9 +255,7 @@ function changeTextSize(delta) {
     showNotification(`Tamanho da fonte: ${currentFontSize}px`, 'info');
 }
 
-/**
- * Alterna modo noturno no leitor
- */
+//Altera o modo noturno no leitor
 function toggleNightMode() {
     nightMode = !nightMode;
     const reader = document.getElementById('readerContainer');
@@ -343,14 +271,7 @@ function toggleNightMode() {
     }
 }
 
-// ===========================================
-// SISTEMA DE DOWNLOAD
-// ===========================================
-
-/**
- * Simula download de livro
- * @param {number} bookId - ID do livro
- */
+// Simula dowload de livro
 function downloadBook(bookId) {
     const book = books.find(b => b.id === bookId);
     if (!book) return;
@@ -372,13 +293,7 @@ function downloadBook(bookId) {
     showNotification(`Download iniciado: "${book.title}"`, 'success');
 }
 
-// ===========================================
-// UPLOAD DE LIVROS
-// ===========================================
-
-/**
- * Processa upload de novo livro
- */
+// Processa upload de novo livro
 function uploadBook() {
     if (!requireLogin('contribuir com livros')) {
         return;
@@ -432,23 +347,13 @@ function uploadBook() {
     showNotification(`Livro "${title}" enviado com sucesso! Obrigado por contribuir, ${currentUser.name}!`, 'success');
 }
 
-/**
- * Verifica se formato do arquivo é válido
- * @param {string} filename - Nome do arquivo
- * @returns {boolean} True se válido
- */
+// Verifica se o formato do arquivo é válido
 function isValidFileFormat(filename) {
     const extension = '.' + filename.split('.').pop().toLowerCase();
     return appConfig.supportedFormats.includes(extension);
 }
 
-/**
- * Gera conteúdo de exemplo para livro enviado
- * @param {string} title - Título do livro
- * @param {string} author - Autor do livro
- * @param {string} description - Descrição do livro
- * @returns {string} Conteúdo HTML
- */
+// Gera contéudo de exemplo para lirvo enviado
 function generateSampleContent(title, author, description) {
     return `
         <h3>Prefácio</h3>
@@ -464,9 +369,7 @@ function generateSampleContent(title, author, description) {
     `;
 }
 
-/**
- * Limpa formulário de upload
- */
+// Limpa formulário de upload
 function clearUploadForm() {
     document.getElementById('bookTitle').value = '';
     document.getElementById('bookAuthor').value = '';
@@ -475,13 +378,7 @@ function clearUploadForm() {
     document.getElementById('bookFile').value = '';
 }
 
-// ===========================================
-// PERFIL DO USUÁRIO
-// ===========================================
-
-/**
- * Atualiza dados do perfil na interface
- */
+// Atualiaz dados do perfil no site
 function updateProfileData() {
     if (!currentUser) return;
 
@@ -504,9 +401,7 @@ function updateProfileData() {
     updateGoalProgress();
 }
 
-/**
- * Renderiza atividades do perfil
- */
+// Renderiza atividades do perfil
 function renderProfileActivity() {
     if (!currentUser) return;
 
@@ -545,9 +440,7 @@ function renderProfileActivity() {
     }
 }
 
-/**
- * Atualiza meta de leitura
- */
+// Atualiza meta de leitura
 function updateGoal() {
     const newGoal = parseInt(document.getElementById('yearlyGoal').value);
     if (newGoal > 0 && newGoal <= 365) {
@@ -559,9 +452,7 @@ function updateGoal() {
     }
 }
 
-/**
- * Atualiza barra de progresso da meta
- */
+// Atualiza barra de progresso da meta
 function updateGoalProgress() {
     const progress = Math.min((userStats.booksRead / userStats.yearlyGoal) * 100, 100);
     document.getElementById('goalProgress').style.width = progress + '%';
@@ -569,13 +460,7 @@ function updateGoalProgress() {
         `${userStats.booksRead} de ${userStats.yearlyGoal} livros (${Math.round(progress)}%)`;
 }
 
-// ===========================================
-// ESTATÍSTICAS GLOBAIS
-// ===========================================
-
-/**
- * Atualiza estatísticas globais da biblioteca
- */
+// Atualiza estísticas globias da biblioteca
 function updateStats() {
     document.getElementById('totalBooks').textContent = formatNumber(books.length);
     
@@ -588,11 +473,7 @@ function updateStats() {
     document.getElementById('categoriesCount').textContent = uniqueCategories.length;
 }
 
-/**
- * Anima números nas estatísticas
- * @param {string} elementId - ID do elemento
- * @param {number} targetNumber - Número final
- */
+// Anima números nas estatísticas
 function animateNumber(elementId, targetNumber) {
     const element = document.getElementById(elementId);
     const startNumber = parseInt(element.textContent.replace(/[.,]/g, ''));
@@ -612,15 +493,7 @@ function animateNumber(elementId, targetNumber) {
     }, stepTime);
 }
 
-// ===========================================
-// SISTEMA DE NOTIFICAÇÕES
-// ===========================================
-
-/**
- * Exibe notificação temporária
- * @param {string} message - Mensagem da notificação
- * @param {string} type - Tipo da notificação ('success', 'error', 'info', 'warning')
- */
+//Exibe notificação temporária
 function showNotification(message, type = 'info') {
     // Remover notificação existente se houver
     const existingNotification = document.querySelector('.notification');
@@ -661,11 +534,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-/**
- * Retorna cor da notificação baseada no tipo
- * @param {string} type - Tipo da notificação
- * @returns {string} Cor CSS
- */
+// Retoena cor da notificação baseada no tipo
 function getNotificationColor(type) {
     const colors = {
         success: '#28a745',
@@ -676,13 +545,7 @@ function getNotificationColor(type) {
     return colors[type] || colors.info;
 }
 
-// ===========================================
-// UTILITÁRIOS DE INTERFACE
-// ===========================================
-
-/**
- * Adiciona animações CSS dinamicamente
- */
+// Adicona animações css dinamicamente
 function addDynamicStyles() {
     const style = document.createElement('style');
     style.textContent = `

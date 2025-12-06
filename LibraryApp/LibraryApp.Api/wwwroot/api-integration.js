@@ -1,5 +1,4 @@
-// CONFIGURAÇÃO DA API
-
+// Configuração da API
 const API_CONFIG = {
     baseURL: '/api',
     endpoints: {
@@ -36,8 +35,7 @@ const API_CONFIG = {
     }
 };
 
-// CLASSE DE GERENCIAMENTO DE TOKENS
-
+// Classe de gerenciamento de toekns
 class TokenManager {
     static saveTokens(accessToken, refreshToken, refreshExpiration) {
         localStorage.setItem(API_CONFIG.storage.accessToken, accessToken);
@@ -79,8 +77,7 @@ class TokenManager {
     }
 }
 
-// CLIENTE HTTP COM INTERCEPTORS
-
+// Clientes htpp com interceptors
 class ApiClient {
     static async request(endpoint, options = {}) {
         const url = API_CONFIG.baseURL + endpoint;
@@ -229,8 +226,7 @@ class ApiClient {
     }
 }
 
-// SERVIÇO DE AUTENTICAÇÃO
-
+// Serviço de autenticação
 class AuthService {
     static async login(email, password) {
         try {
@@ -376,14 +372,8 @@ class CategoryService {
     }
 }
 
-// SERVIÇO DE LIVROS
-
+// Serviço de livros
 class BookService {
-    /**
-     * Busca livros com paginação
-     * page - Número da página (começa em 1)
-     * perPage - Quantidade de livros por página
-     */
     static async getBooksPaginated(page = 1, perPage = 12) {
         try {
             const response = await ApiClient.get(
@@ -495,8 +485,7 @@ class BookService {
     }
 }
 
-// SERVIÇO DE COMENTÁRIOS
-
+// Serviço de comentários
 class CommentService {
     static async getBookComments(bookId, page = 1, perPage = 10) {
         try {
@@ -542,8 +531,7 @@ class CommentService {
     }
 }
 
-// INICIALIZAÇÃO E VERIFICAÇÕES
-
+// Inicialização e verificações
 function initializeAuth() {
     console.log('🔐 Inicializando sistema de autenticação...');
 
@@ -604,8 +592,7 @@ async function handleEmailConfirmation(email, token) {
     }
 }
 
-// EXPORTAR PARA ESCOPO GLOBAL
-
+// Exportar para escopo global
 window.API_CONFIG = API_CONFIG;
 window.TokenManager = TokenManager;
 window.ApiClient = ApiClient;

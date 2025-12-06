@@ -1,12 +1,4 @@
-/*
- * BIBLIOTECA VIRTUAL - AUTENTICAÇÃO DA TELA PRINCIPAL (API REAL)
- * Integrado com backend .NET em https://localhost:5001
- */
-
-// ===========================================
-// VERIFICAÇÃO DE SESSÃO
-// ===========================================
-
+// Verificação de sessação
 function checkAuthState() {
     console.log('🔍 Verificando estado de autenticação...');
     
@@ -52,10 +44,7 @@ function showWelcomeMessage(userName) {
     }
 }
 
-// ===========================================
-// CONTROLE DE INTERFACE AUTENTICADA
-// ===========================================
-
+// Controle de interface autenticada
 function updateAuthUI() {
     const loginBtn = document.getElementById('loginBtn');
     const userInfo = document.getElementById('userInfo');
@@ -102,10 +91,7 @@ function hideAuthenticatedContent() {
     }
 }
 
-// ===========================================
-// LOGOUT E GERENCIAMENTO DE SESSÃO
-// ===========================================
-
+// Logout e gerenciamento de sessação
 function logout() {
     if (!currentUser) return;
     
@@ -137,10 +123,7 @@ function logout() {
     }
 }
 
-// ===========================================
-// PROTEÇÃO DE RECURSOS
-// ===========================================
-
+// Proteção de recursos
 function requireLogin(action = 'acessar este recurso') {
     if (!currentUser) {
         showLoginPrompt(action);
@@ -160,10 +143,7 @@ function showLoginPrompt(action) {
     }, 500);
 }
 
-// ===========================================
-// INTEGRAÇÃO COM FUNCIONALIDADES
-// ===========================================
-
+// Integração com funcionalidades
 function toggleFavorite(bookId) {
     if (!requireLogin('favoritar livros')) {
         return;
@@ -240,10 +220,7 @@ function uploadBook() {
     showNotification(`Livro "${title}" enviado com sucesso! Obrigado, ${currentUser.name}!`, 'success');
 }
 
-// ===========================================
-// FUNÇÕES AUXILIARES
-// ===========================================
-
+// Funções auxiliares
 function isValidFileFormat(filename) {
     const extension = '.' + filename.split('.').pop().toLowerCase();
     return appConfig.supportedFormats.includes(extension);
@@ -291,10 +268,7 @@ function getCategoryName(title) {
     return 'Literatura';
 }
 
-// ===========================================
-// GERENCIAMENTO DE PERFIL
-// ===========================================
-
+// Gerenciamento de perfil
 function showEditProfile() {
     if (!currentUser) {
         requireLogin('editar perfil');
@@ -364,13 +338,9 @@ function updateProfile() {
     showNotification('Perfil atualizado com sucesso!', 'success');
 }
 
-// ===========================================
-// AUTO-SAVE E PERSISTÊNCIA
-// ===========================================
-
+// Auto-Save e persistência
 function saveUserSession() {
     // Dados já são salvos pelo TokenManager
-    // Esta função mantém compatibilidade com código existente
     console.log('💾 Sessão salva (via TokenManager)');
 }
 
@@ -393,10 +363,7 @@ function setupBeforeUnload() {
     });
 }
 
-// ===========================================
-// INICIALIZAÇÃO
-// ===========================================
-
+// Inicialização
 function initMainAuth() {
     console.log('🔐 Inicializando autenticação da tela principal...');
     

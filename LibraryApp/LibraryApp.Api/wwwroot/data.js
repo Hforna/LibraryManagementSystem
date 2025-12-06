@@ -1,13 +1,3 @@
-/*
- * BIBLIOTECA VIRTUAL - CONFIGURAÇÕES E UTILITÁRIOS
- * Arquivo responsável por configurações da aplicação e funções auxiliares
- * Integrado com API .NET em https://localhost:5001
- */
-
-// ===========================================
-// CONFIGURAÇÕES GERAIS DA APLICAÇÃO
-// ===========================================
-
 const appConfig = {
     name: "O Caminho do Saber",
     version: "2.0.0",
@@ -21,10 +11,7 @@ const appConfig = {
     autoSaveInterval: 60000 // 1 minuto para auto-save
 };
 
-// ===========================================
-// MENSAGENS E TEXTOS DA INTERFACE
-// ===========================================
-
+//mensagens e textos do site
 const messages = {
     welcome: "Bem-vindo à O Caminho do Saber!",
     loginSuccess: "Login realizado com sucesso!",
@@ -52,10 +39,7 @@ const messages = {
     }
 };
 
-// ===========================================
-// ÍCONES DE CATEGORIAS (FALLBACK)
-// ===========================================
-
+//ícone de categoria
 const categoryIcons = {
     'literatura': '📚',
     'ficção': '📖',
@@ -80,15 +64,7 @@ const categoryIcons = {
     'default': '📖'
 };
 
-// ===========================================
-// FUNÇÕES UTILITÁRIAS
-// ===========================================
-
-/**
- * Retorna o ícone correspondente à categoria
- * @param {string} category - Nome da categoria
- * @returns {string} Ícone da categoria
- */
+//Retorna o ícone correspondente à categoria
 function getCategoryIcon(category) {
     if (!category) return categoryIcons.default;
     const normalized = category.toLowerCase()
@@ -97,40 +73,25 @@ function getCategoryIcon(category) {
     return categoryIcons[normalized] || categoryIcons.default;
 }
 
-/**
- * Gera um ID único para novos elementos (apenas frontend)
- * @returns {number} ID único baseado em timestamp
- */
+//gera um id único para  novos elementos
 function generateUniqueId() {
     return Date.now() + Math.floor(Math.random() * 1000);
 }
 
-/**
- * Formata números para exibição (ex: 1234 -> 1.234)
- * @param {number} num - Número para formatar
- * @returns {string} Número formatado
- */
+///formata números para exibir 
 function formatNumber(num) {
     if (!num && num !== 0) return '0';
     return num.toLocaleString('pt-BR');
 }
 
-/**
- * Valida formato de e-mail
- * @param {string} email - E-mail para validar
- * @returns {boolean} True se válido
- */
+//valida formato do email
 function validateEmail(email) {
     if (!email) return false;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-/**
- * Sanitiza string para evitar XSS
- * @param {string} str - String para sanitizar
- * @returns {string} String sanitizada
- */
+///sanitiza string para evitar xss
 function sanitizeString(str) {
     if (!str) return '';
     const div = document.createElement('div');
@@ -138,11 +99,7 @@ function sanitizeString(str) {
     return div.innerHTML;
 }
 
-/**
- * Escapa HTML para exibição segura
- * @param {string} text - Texto para escapar
- * @returns {string} Texto escapado
- */
+//escapa html para exibição segura
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -150,11 +107,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-/**
- * Calcula tempo estimado de leitura
- * @param {string} content - Conteúdo do livro
- * @returns {number} Tempo em minutos
- */
+//calcula tempo estimado de leitura
 function calculateReadingTime(content) {
     if (!content) return 0;
     const wordsPerMinute = 200; // Média de leitura
@@ -162,11 +115,7 @@ function calculateReadingTime(content) {
     return Math.ceil(wordCount / wordsPerMinute);
 }
 
-/**
- * Formata data para exibição
- * @param {string|Date} date - Data para formatar
- * @returns {string} Data formatada
- */
+//formata data para exibição
 function formatDate(date) {
     if (!date) return 'Data não disponível';
     const d = new Date(date);
@@ -177,11 +126,7 @@ function formatDate(date) {
     });
 }
 
-/**
- * Formata tamanho de arquivo
- * @param {number} bytes - Tamanho em bytes
- * @returns {string} Tamanho formatado (ex: "2.5 MB")
- */
+//formata o tamanho do arquivo
 function formatFileSize(bytes) {
     if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -190,45 +135,27 @@ function formatFileSize(bytes) {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
-/**
- * Valida tamanho de arquivo
- * @param {File} file - Arquivo para validar
- * @returns {boolean} True se válido
- */
+//valida o tamanho do arquivo
 function validateFileSize(file) {
     if (!file) return false;
     return file.size <= appConfig.maxFileSize;
 }
 
-/**
- * Valida formato de arquivo
- * @param {string} filename - Nome do arquivo
- * @returns {boolean} True se válido
- */
+//valida o formato do arquivo
 function validateFileFormat(filename) {
     if (!filename) return false;
     const extension = '.' + filename.split('.').pop().toLowerCase();
     return appConfig.supportedFormats.includes(extension);
 }
 
-/**
- * Trunca texto com reticências
- * @param {string} text - Texto para truncar
- * @param {number} maxLength - Comprimento máximo
- * @returns {string} Texto truncado
- */
+//trunca o texto com reticências
 function truncateText(text, maxLength = 100) {
     if (!text) return '';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
 }
 
-/**
- * Debounce para funções
- * @param {Function} func - Função para fazer debounce
- * @param {number} wait - Tempo de espera em ms
- * @returns {Function} Função com debounce
- */
+//debounce para funções
 function debounce(func, wait = 300) {
     let timeout;
     return function executedFunction(...args) {
@@ -241,11 +168,7 @@ function debounce(func, wait = 300) {
     };
 }
 
-/**
- * Obtém mensagem de erro amigável
- * @param {Error|string} error - Erro para processar
- * @returns {string} Mensagem de erro amigável
- */
+//obtém mensagem de erro
 function getFriendlyErrorMessage(error) {
     if (!error) return messages.errors.serverError;
     
@@ -270,11 +193,7 @@ function getFriendlyErrorMessage(error) {
     return messages.errors.serverError;
 }
 
-/**
- * Copia texto para área de transferência
- * @param {string} text - Texto para copiar
- * @returns {Promise<boolean>} True se copiado com sucesso
- */
+//copia texto para área de transferência
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
@@ -285,10 +204,7 @@ async function copyToClipboard(text) {
     }
 }
 
-/**
- * Gera cor aleatória para categorias
- * @returns {string} Código de cor hex
- */
+//gera cor aleatória para categoria
 function generateRandomColor() {
     const colors = [
         '#e74c3c', '#3498db', '#f39c12', '#9b59b6',
@@ -298,18 +214,12 @@ function generateRandomColor() {
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
-/**
- * Verifica se é mobile
- * @returns {boolean} True se for mobile
- */
+//verifica se é mobile
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-/**
- * Scroll suave para elemento
- * @param {string} elementId - ID do elemento
- */
+//scroll suave para elemento
 function smoothScrollTo(elementId) {
     const element = document.getElementById(elementId);
     if (element) {
@@ -317,29 +227,18 @@ function smoothScrollTo(elementId) {
     }
 }
 
-/**
- * Obtém parâmetro da URL
- * @param {string} param - Nome do parâmetro
- * @returns {string|null} Valor do parâmetro
- */
+//obtém parâ^metro de url
 function getUrlParameter(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
 
-/**
- * Define título da página
- * @param {string} title - Título da página
- */
+//define título da página
 function setPageTitle(title) {
     document.title = title ? `${title} - ${appConfig.name}` : appConfig.name;
 }
 
-/**
- * Sorteia array aleatoriamente
- * @param {Array} array - Array para sortear
- * @returns {Array} Array sorteado
- */
+//sorteia array 
 function shuffleArray(array) {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -349,12 +248,7 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-/**
- * Agrupa array por propriedade
- * @param {Array} array - Array para agrupar
- * @param {string} key - Chave para agrupar
- * @returns {Object} Objeto agrupado
- */
+//agrupa array pro propriedade
 function groupBy(array, key) {
     return array.reduce((result, item) => {
         const group = item[key];
@@ -366,12 +260,7 @@ function groupBy(array, key) {
     }, {});
 }
 
-/**
- * Remove duplicatas de array
- * @param {Array} array - Array com possíveis duplicatas
- * @param {string} key - Chave para comparação (opcional)
- * @returns {Array} Array sem duplicatas
- */
+//remove duplicatas de array
 function removeDuplicates(array, key = null) {
     if (!key) {
         return [...new Set(array)];
@@ -387,15 +276,7 @@ function removeDuplicates(array, key = null) {
     });
 }
 
-// ===========================================
-// VALIDAÇÕES DE FORMULÁRIO
-// ===========================================
-
-/**
- * Valida força da senha
- * @param {string} password - Senha para validar
- * @returns {Object} Objeto com força e mensagem
- */
+//valida força da senha
 function validatePasswordStrength(password) {
     if (!password) {
         return { strength: 'weak', message: 'Digite uma senha' };
@@ -418,11 +299,7 @@ function validatePasswordStrength(password) {
     return { strength: 'strong', message: 'Senha forte', score: strength };
 }
 
-/**
- * Valida campos obrigatórios
- * @param {Object} fields - Objeto com campos para validar
- * @returns {Object} Objeto com resultado da validação
- */
+//valida campos obrigatórios
 function validateRequiredFields(fields) {
     const errors = [];
     
@@ -438,15 +315,7 @@ function validateRequiredFields(fields) {
     };
 }
 
-// ===========================================
-// INICIALIZAÇÃO E LOG
-// ===========================================
-
-/**
- * Log de desenvolvimento
- * @param {string} message - Mensagem para logar
- * @param {string} type - Tipo do log (info, warn, error)
- */
+//log de desenvolvimento
 function devLog(message, type = 'info') {
     if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev')) {
         const styles = {
@@ -458,10 +327,6 @@ function devLog(message, type = 'info') {
         console.log(`%c[O Caminho do Saber] ${message}`, styles[type] || styles.info);
     }
 }
-
-// ===========================================
-// EXPORTAR PARA ESCOPO GLOBAL
-// ===========================================
 
 // Disponibilizar configurações e funções globalmente
 window.appConfig = appConfig;

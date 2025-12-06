@@ -1,7 +1,4 @@
-// INICIALIZAÇÃO DA APLICAÇÃO
-
-//Função principal de inicialização que executa quando a aplicação carrega
-
+// Função principal de inicialização que executa quando a aplicação carrega
 function init() {
     console.log('🚀 Iniciando O Caminho do Saber...');
     
@@ -31,7 +28,7 @@ function init() {
     console.log('✅ O Caminho do Saber iniciado com sucesso!');
 }
 
-//Configura todos os event listeners da aplicação
+// Configura todos os event listeners da aplicação
 function setupEventListeners() {
     // Event listener para busca com Enter
     const searchInput = document.getElementById('searchInput');
@@ -42,7 +39,7 @@ function setupEventListeners() {
             }
         });
 
-        // Busca em tempo real (com debounce)
+        // Busca em tempo real
         let searchTimeout;
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
@@ -66,9 +63,7 @@ function setupEventListeners() {
     setupFormEventListeners();
 }
 
-/**
- * Configura eventos dos modais
- */
+// Configura eventos dos modais
 function setupModalEventListeners() {
     // Fechar modal clicando fora dele
     document.addEventListener('click', function(e) {
@@ -89,9 +84,7 @@ function setupModalEventListeners() {
     });
 }
 
-
- //Configura atalhos de teclado
-
+// Configura atalhos de teclado
 function setupKeyboardEventListeners() {
     document.addEventListener('keydown', function(e) {
         // ESC - Fechar modais e leitor
@@ -104,13 +97,11 @@ function setupKeyboardEventListeners() {
                 closeEditProfile();
             }
         }
-
         // Ctrl+F - Focar na busca
         if (e.ctrlKey && e.key === 'f') {
             e.preventDefault();
             document.getElementById('searchInput').focus();
         }
-
         // Ctrl+L - Abrir modal de login
         if (e.ctrlKey && e.key === 'l' && !currentUser) {
             e.preventDefault();
@@ -118,10 +109,7 @@ function setupKeyboardEventListeners() {
         }
     });
 }
-
-
- //Configura eventos dos formulários
-
+// Configura eventos dos formulários
 function setupFormEventListeners() {
     // Validação em tempo real para campos de e-mail
     document.querySelectorAll('input[type="email"]').forEach(input => {
@@ -156,11 +144,7 @@ function setupFormEventListeners() {
         }
     });
 }
-
-// PROCESSOS AUTOMÁTICOS
-
-//Inicia processos que executam automaticamente
-
+// Inicia processos que executam automaticamente
 function startAutomaticProcesses() {
     // Atualizar estatísticas periodicamente
     setInterval(() => {
@@ -179,10 +163,7 @@ function startAutomaticProcesses() {
         }, appConfig.autoSaveInterval);
     }
 }
-
-
- //Adiciona livros aleatórios para demonstração
-
+// Adiciona livros aleatórios para demonstração
 function addRandomBooksDemo() {
     const randomTitles = [
         { 
@@ -258,9 +239,7 @@ function addRandomBooksDemo() {
     }
 }
 
-
-//Auto-save do progresso do usuário (simulado)
-
+// Auto-save do progresso do usuário (simulado)
 function autoSaveUserProgress() {
     if (!currentUser) return;
     
@@ -280,11 +259,7 @@ function autoSaveUserProgress() {
     console.log('Dados salvos:', progressData);
 }
 
-// INFORMAÇÕES DE DESENVOLVIMENTO
-
-
- //Exibe informações úteis no console para desenvolvimento
-
+ // Exibe informações úteis no console para desenvolvimento
 function showDevInfo() {
     console.group('🔐 Usuários de Teste Disponíveis:');
     usersDatabase.forEach(user => {
@@ -320,10 +295,7 @@ function showDevInfo() {
     console.groupEnd();
 }
 
-// UTILITÁRIOS PARA DEMONSTRAÇÃO
-
-//Simula atividade de usuários para demonstração
-
+// Simula atividade de usuários para demonstração
 function simulateUserActivity() {
     // Incrementar leituras aleatoriamente
     const currentReads = parseInt(document.getElementById('totalReads').textContent.replace(/[.,]/g, ''));
@@ -337,9 +309,7 @@ function simulateUserActivity() {
     }
 }
 
-
-//Executa demonstrações interativas
-
+// Executa demonstrações interativas
 function runInteractiveDemos() {
     // Demonstração de busca automática (apenas para apresentação)
     if (window.location.search.includes('demo=true')) {
@@ -351,9 +321,7 @@ function runInteractiveDemos() {
     }
 }
 
-
-//Limpa dados da demonstração
-
+// Limpa dados da demonstração
 function resetDemoData() {
     if (confirm('⚠️ Isso irá limpar todos os dados da demonstração. Continuar?')) {
         books.splice(sampleBooks.length); // Manter apenas livros originais
@@ -374,24 +342,18 @@ function resetDemoData() {
     }
 }
 
-// TRATAMENTO DE ERROS
-
-//Manipulador global de erros
-
+// Manipulador global de erros
 window.addEventListener('error', function(e) {
     console.error('❌ Erro capturado:', e.error);
     showNotification('Ops! Algo deu errado. Tente recarregar a página.', 'error');
 });
 
 
-//Manipulador para promessas rejeitadas
-
+// Manipulador para promessas rejeitadas
 window.addEventListener('unhandledrejection', function(e) {
     console.error('❌ Promise rejeitada:', e.reason);
     showNotification('Erro de conectividade. Verifique sua conexão.', 'warning');
 });
-
-// INICIALIZAÇÃO AUTOMÁTICA
 
 // Aguardar carregamento completo do DOM
 document.addEventListener('DOMContentLoaded', function() {
@@ -410,8 +372,6 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
-
-// EXPOSIÇÃO GLOBAL PARA DEBUG
 
 // Expor funções úteis para debug no console
 if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev')) {

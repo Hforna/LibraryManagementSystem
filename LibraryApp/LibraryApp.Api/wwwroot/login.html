@@ -22,7 +22,6 @@
         <!-- Logo e branding -->
         <div class="brand-section">
             <div class="logo">
-                <span class="logo-icon">📚</span>
                 <h1>O Caminho do Saber</h1>
             </div>
             <p class="tagline">Sua biblioteca digital gratuita</p>
@@ -47,11 +46,9 @@
             <!-- Abas de Login/Cadastro -->
             <div class="auth-tabs">
                 <button class="auth-tab active" onclick="showAuthForm('login')">
-                    <span class="tab-icon">🔑</span>
                     Entrar
                 </button>
                 <button class="auth-tab" onclick="showAuthForm('register')">
-                    <span class="tab-icon">✨</span>
                     Cadastrar
                 </button>
             </div>
@@ -233,20 +230,6 @@
     <div id="notification" class="notification hidden">
         <span class="notification-text"></span>
         <button class="notification-close" onclick="hideNotification()">✕</button>
-    </div>
-
-    <!-- Usuários de demonstração -->
-    <div class="demo-users">
-        <h3>👥 Contas de Teste</h3>
-        <div class="demo-user" onclick="fillLogin('admin', '123456')">
-            <strong>admin</strong> • 123456
-        </div>
-        <div class="demo-user" onclick="fillLogin('leitor01', 'senha123')">
-            <strong>leitor01</strong> • senha123
-        </div>
-        <div class="demo-user" onclick="fillLogin('bookworm', 'livros2025')">
-            <strong>bookworm</strong> • livros2025
-        </div>
     </div>
 
     <!-- Scripts -->

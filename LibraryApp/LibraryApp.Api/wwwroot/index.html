@@ -8,11 +8,10 @@
 </head>
 <body>
     <div class="container">
-        <!-- HEADER -->
+        <!-- Header -->
         <div class="header">
             <div class="header-top">
                 <div class="logo-section">
-                    <div class="logo">📚</div>
                     <div class="logo-text">O Caminho do Saber</div>
                 </div>
 
@@ -30,7 +29,7 @@
             </div>
         </div>
 
-        <!-- STATS -->
+        <!-- Status -->
         <div class="stats-container">
             <div class="stat-card">
                 <div class="stat-number" id="totalBooks">0</div>
@@ -42,7 +41,7 @@
             </div>
         </div>
 
-        <!-- BOOKS GRID -->
+        <!-- Grade de livros -->
         <div class="content-section">
             <h2 style="margin-bottom: 20px; color: #4a54e1;">📖 Catálogo de Livros</h2>
             <div id="booksGrid" class="books-grid">
@@ -52,7 +51,7 @@
                 </div>
             </div>
 
-            <!-- PAGINAÇÃO -->
+            <!-- Paginação -->
             <div id="paginationContainer" class="pagination-container" style="display: none;">
                 <button id="btnFirstPage" onclick="goToPage(1)">« Primeira</button>
                 <button id="btnPrevPage" onclick="goToPreviousPage()">‹ Anterior</button>
@@ -63,11 +62,11 @@
         </div>
     </div>
 
-    <!-- MODAL DE LOGIN -->
+    <!-- Madal de login -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeLoginModal()">✕</button>
-            <h2>🔑 Entrar na Conta</h2>
+            <h2>Entrar na Conta</h2>
             <form onsubmit="login(event)">
                 <div class="form-group">
                     <label>E-mail ou Username</label>
@@ -82,17 +81,14 @@
             <div class="modal-link">
                 Não tem conta? <a href="#" onclick="showRegisterModal()">Cadastre-se</a>
             </div>
-            <button onclick="loginWithGoogle()" class="social-btn">
-                🔴 Continuar com Google
-            </button>
         </div>
     </div>
 
-    <!-- MODAL DE REGISTRO -->
+    <!-- Modal de registro -->
     <div id="registerModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeRegisterModal()">✕</button>
-            <h2>✨ Criar Conta</h2>
+            <h2>Criar Conta</h2>
             <form onsubmit="register(event)">
                 <div class="form-group">
                     <label>Username/Nick</label>
@@ -114,11 +110,11 @@
         </div>
     </div>
 
-    <!-- MODAL DE UPLOAD -->
+    <!-- Modal de upload -->
     <div id="uploadModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeUploadModal()">✕</button>
-            <h2>📤 Enviar Novo Livro</h2>
+            <h2> Enviar Novo Livro</h2>
             <form onsubmit="uploadBook(event)">
                 <div class="form-group">
                     <label>Título do Livro *</label>
@@ -153,26 +149,26 @@
         </div>
     </div>
 
-    <!-- NOTIFICAÇÃO -->
+    <!-- Notificação -->
     <div id="notification" class="notification"></div>
 
-    <!-- INCLUIR SCRIPTS EXTERNOS -->
+    <!-- Incluir scripts externis -->
     <script src="data.js"></script>
     <script src="api-integration.js"></script>
 
     <script>
-        // ========== ESTADO DA APLICAÇÃO ==========
+        // Estado da aplicação
         let currentBooks = [];
         let currentPage = 1;
         let totalPages = 1;
         let totalItems = 0;
         const booksPerPage = 12;
 
-        // ========== CATEGORIAS ==========
+        // Categorias
         let categories = {};
         let selectedCategories = [];
 
-        // ========== AUTENTICAÇÃO ==========
+        // Autenticação
 
         function updateAuthUI() {
             const userSection = document.getElementById('userSection');
@@ -180,17 +176,12 @@
 
             if (user) {
                 userSection.innerHTML = `
-                        <div class="user-info">
-                            <span>👤</span>
-                            <span>${escapeHtml(user.userName || user.email)}</span>
-                        </div>
-                        <button class="btn-upload" onclick="showUploadModal()">📤 Enviar</button>
+                        <button class="btn-upload" onclick="showUploadModal()">Enviar</button>
                         <button class="btn-logout" onclick="logout()">Sair</button>
                     `;
             } else {
                 userSection.innerHTML = `
-                        <button class="btn-login" onclick="showLoginModal()">🔑 Entrar</button>
-                        <button class="btn-login" onclick="showRegisterModal()">✨ Cadastrar</button>
+                        <button class="btn-login" onclick="showLoginModal()">Entrar</button>
                     `;
             }
         }
@@ -275,7 +266,7 @@
             AuthService.loginWithGoogle();
         }
 
-        // ========== LIVROS COM PAGINAÇÃO ==========
+        // Livros com paginação
 
         async function loadBooks(page = 1) {
             try {
@@ -517,7 +508,7 @@
             renderCategories();
         }
 
-        // ========== UPLOAD ==========
+        // Upload
 
         function showUploadModal() {
             if (!AuthService.isAuthenticated()) {
@@ -576,7 +567,7 @@
             btn.textContent = 'Enviar Livro';
         }
 
-        // ========== UTILS ==========
+        // Utils
 
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
@@ -600,10 +591,10 @@
             return div.innerHTML;
         }
 
-        // ========== INICIALIZAÇÃO ==========
+        // Inicialização
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📚 O Caminho do Saber iniciando com paginação...');
+            console.log('O Caminho do Saber iniciando com paginação...');
 
             const initApp = () => {
                 if (typeof AuthService === 'undefined') {
