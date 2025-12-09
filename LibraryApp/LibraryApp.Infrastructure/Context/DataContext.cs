@@ -132,7 +132,7 @@ namespace LibraryApp.Infrastructure.Context
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"..\LibraryApp.Api\appsettings.Development.json"), optional: false, reloadOnChange: true)
+                .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"../LibraryApp.Api/appsettings.Development.json"), optional: false, reloadOnChange: true)
                 .Build();
 
             optionsBuilder.UseNpgsql(configuration.GetConnectionString("postgres"));

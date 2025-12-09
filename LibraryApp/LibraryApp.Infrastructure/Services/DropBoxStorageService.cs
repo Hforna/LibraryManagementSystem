@@ -4,20 +4,27 @@ using LibraryApp.Domain.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using static Dropbox.Api.Files.PathOrLink;
 
 namespace LibraryApp.Infrastructure.Services
 {
     // Token de acesso para autenticação na API do Dropbox
     public class DropBoxStorageService : IStorageService
+    {
+        private readonly string _accessToken;
+        private readonly ILogger _logger;
+        private const string BaseFilePath = "/uploads/files/";
     {        
         private readonly string _accessToken; // Caminho base onde os arquivos serão armazenados no Dropbox
         private const string BaseFilePath = "/uploads/files/"; // Caminho base onde os arquivos serão armazenados no Dropbox
 
+        public DropBoxStorageService(string accessToken, ILogger<DropBoxStorageService> logger)
         // Construtor que recebe o token de acesso do Dropbox
         public DropBoxStorageService(string accessToken)
         {
             _accessToken = accessToken;
+            _logger = logger;
         }
         
         // Obtém uma URL temporária para acessar um arquivo armazenado no Dropbox
@@ -25,6 +32,13 @@ namespace LibraryApp.Infrastructure.Services
         {            
             using var client = new DropboxClient(_accessToken); // Cria um cliente Dropbox usando o token de acesso
             try
+            {
+                var link = await client.Files.GetTemporaryLinkAsync($"{BaseFilePath}{fileName}");
+                
+                _logger.LogInformation($"Getting file link: {link}");
+
+                return link.Link.Replace("?dl=0", "?raw=1");
+            }catch (Exception ex)
             {                
                 var link = await client.Files.GetTemporaryLinkAsync($"{BaseFilePath}{fileName}"); // Solicita um link temporário para o arquivo especificado
                 return link.Link.Replace("?dl=0", "?raw=1"); // Substitui o parâmetro de download padrão (?dl=0) por ?raw=1, isso faz o arquivo seja exibido no navegador em vez de baixado

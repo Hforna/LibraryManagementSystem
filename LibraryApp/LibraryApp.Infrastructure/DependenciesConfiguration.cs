@@ -13,6 +13,7 @@ using SendGrid;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace LibraryApp.Infrastructure
 {
@@ -63,7 +64,8 @@ namespace LibraryApp.Infrastructure
         {
             //serviçp de armazenamento
             string dropBoxKey = configuration.GetValue<string>("services:storage:dropBox:apiKey")!;
-            services.AddScoped<IStorageService, DropBoxStorageService>(d => new DropBoxStorageService(dropBoxKey));
+            services.AddScoped<IStorageService, DropBoxStorageService>(d => new DropBoxStorageService(dropBoxKey, 
+                d.CreateScope().ServiceProvider.GetRequiredService<ILogger<DropBoxStorageService>>()));
 
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
 
