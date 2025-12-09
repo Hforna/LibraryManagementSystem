@@ -9,29 +9,31 @@ using System.Text;
 
 namespace LibraryApp.Application
 {
+    // Classe de configuração do AutoMapper
     public class AutoMapperService : Profile
     {
+        // Construtor onde são definidos todos os mapeamentos
         public AutoMapperService()
         {
-            CreateMap<CreateUserRequest, User>()
-                .ForMember(d => d.PasswordHash, f => f.Ignore())
-                .ForMember(d => d.UserName, f => f.MapFrom(d => d.UserName));
+            CreateMap<CreateUserRequest, User>() // Converte dados da requisição de criação em entidade User
+                .ForMember(d => d.PasswordHash, f => f.Ignore()) // Ignora o PasswordHash porque será criptografado separadamente
+                .ForMember(d => d.UserName, f => f.MapFrom(d => d.UserName)); // Mapeia explicitamente UserName de origem para destino
 
-            CreateMap<User, UserResponse>();
+            CreateMap<User, UserResponse>(); // Converte entidade User em DTO de resposta
 
-            CreateMap<BookRequest, Book>();
+            CreateMap<BookRequest, Book>(); // Converte requisição de livro em entidade Book
 
-            CreateMap<Book,  BookResponse>();
+            CreateMap<Book, BookResponse>(); // Converte entidade Book em resposta completa
 
-            CreateMap<Comment, CommentResponse>();
+            CreateMap<Comment, CommentResponse>(); // Converte entidade Comment em resposta
 
-            CreateMap<Pagination<Comment>, CommentsPaginatedResponse>();
+            CreateMap<Pagination<Comment>, CommentsPaginatedResponse>(); // Converte resultado paginado de comentários
 
-            CreateMap<Pagination<Book>, BooksPaginatedResponse>();
+            CreateMap<Pagination<Book>, BooksPaginatedResponse>(); // Converte resultado paginado de livros
 
-            CreateMap<Book, BookShortResponse>();
+            CreateMap<Book, BookShortResponse>(); // Converte entidade Book em resposta resumida
 
-            CreateMap<Category, CategoryResponse>();
+            CreateMap<Category, CategoryResponse>(); // Converte entidade Category em resposta
         }
     }
 }
