@@ -5,6 +5,7 @@ using Pagination.EntityFrameworkCore.Extensions;
 
 namespace LibraryApp.Infrastructure.Context;
 
+//Gerencia dados e persistencia da tabela de livros e relacionados
 public class BookRepository : IBookRepository
 {
     private readonly DataContext _context;

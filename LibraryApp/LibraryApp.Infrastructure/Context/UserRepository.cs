@@ -8,6 +8,7 @@ using System.Text;
 
 namespace LibraryApp.Infrastructure.Context
 {
+    //Gerencia consultas e escritas na tabela de usuario e relacionados
     public class UserRepository : IUserRepository
     {
         private readonly DataContext _context;

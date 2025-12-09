@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace LibraryApp.Infrastructure.Context
 {
+    //Repositorio de comentarios para leitura e persistencia
     public class CommentRepository : ICommentRepository
     {
         private readonly DataContext _context;

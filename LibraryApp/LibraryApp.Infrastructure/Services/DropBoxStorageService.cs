@@ -15,13 +15,9 @@ namespace LibraryApp.Infrastructure.Services
         private readonly string _accessToken;
         private readonly ILogger _logger;
         private const string BaseFilePath = "/uploads/files/";
-    {        
-        private readonly string _accessToken; // Caminho base onde os arquivos serão armazenados no Dropbox
-        private const string BaseFilePath = "/uploads/files/"; // Caminho base onde os arquivos serão armazenados no Dropbox
-
-        public DropBoxStorageService(string accessToken, ILogger<DropBoxStorageService> logger)
+        
         // Construtor que recebe o token de acesso do Dropbox
-        public DropBoxStorageService(string accessToken)
+        public DropBoxStorageService(string accessToken, ILogger<DropBoxStorageService> logger)
         {
             _accessToken = accessToken;
             _logger = logger;
@@ -38,10 +34,6 @@ namespace LibraryApp.Infrastructure.Services
                 _logger.LogInformation($"Getting file link: {link}");
 
                 return link.Link.Replace("?dl=0", "?raw=1");
-            }catch (Exception ex)
-            {                
-                var link = await client.Files.GetTemporaryLinkAsync($"{BaseFilePath}{fileName}"); // Solicita um link temporário para o arquivo especificado
-                return link.Link.Replace("?dl=0", "?raw=1"); // Substitui o parâmetro de download padrão (?dl=0) por ?raw=1, isso faz o arquivo seja exibido no navegador em vez de baixado
             }
             catch (Exception ex)
             {

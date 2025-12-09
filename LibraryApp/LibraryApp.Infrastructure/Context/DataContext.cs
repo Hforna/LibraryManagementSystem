@@ -10,22 +10,34 @@ using System.Text;
 
 namespace LibraryApp.Infrastructure.Context
 {
+    // Contexto principal do Entity Framework que gerencia as entidades e o Identity
     public class DataContext : IdentityDbContext<User, Role, long>
     {
+        // Construtor que recebe as configurações do contexto via injeção de dependência
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
+        // Tabela de livros
         public DbSet<Book> Books { get; set; }
+        // Tabela de categorias
         public DbSet<Category> Categories { get; set; }
+        // Tabela de relacionamento entre livros e categorias (N:N)
         public DbSet<BookCategory> BookCategories { get; set; }
+        // Tabela de comentários
         public DbSet<Comment> Comments { get; set; }
+        // Tabela de downloads
         public DbSet<Download> Downloads { get; set; }
+        // Tabela de curtidas
         public DbSet<Like> Likes { get; set; }
+        // Tabela de visualizações
         public DbSet<View> Views { get; set; }
 
+        // Configura o mapeamento das entidades para o banco de dados
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            // Configurações padrão do Identity
             base.OnModelCreating(builder);
 
+            // Renomeação das tabelas do Identity
             builder.Entity<User>().ToTable("usuarios");
             builder.Entity<IdentityRole<long>>().ToTable("papeis");
             builder.Entity<IdentityUserRole<long>>().ToTable("usuarios_papeis");
@@ -34,6 +46,7 @@ namespace LibraryApp.Infrastructure.Context
             builder.Entity<IdentityRoleClaim<long>>().ToTable("papeis_reivindicacoes");
             builder.Entity<IdentityUserToken<long>>().ToTable("usuarios_tokens");
 
+            // Mapeamento da entidade Livro
             builder.Entity<Book>(entity =>
             {
                 entity.ToTable("livros");
@@ -45,12 +58,14 @@ namespace LibraryApp.Infrastructure.Context
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Mapeamento da entidade Categoria
             builder.Entity<Category>(entity =>
             {
                 entity.ToTable("categorias");
                 entity.HasKey(c => c.Id);
             });
 
+            // Mapeamento do relacionamento Livro x Categoria
             builder.Entity<BookCategory>(entity =>
             {
                 entity.ToTable("livros_categorias");
@@ -65,6 +80,7 @@ namespace LibraryApp.Infrastructure.Context
                       .HasForeignKey(bc => bc.CategoryId);
             });
 
+            // Mapeamento da entidade Curtida
             builder.Entity<Like>(entity =>
             {
                 entity.ToTable("curtidas");
@@ -79,6 +95,7 @@ namespace LibraryApp.Infrastructure.Context
                       .HasForeignKey(l => l.BookId);
             });
 
+            // Mapeamento da entidade Comentário
             builder.Entity<Comment>(entity =>
             {
                 entity.ToTable("comentarios");
@@ -93,6 +110,7 @@ namespace LibraryApp.Infrastructure.Context
                       .HasForeignKey(c => c.BookId);
             });
 
+            // Mapeamento da entidade Visualização
             builder.Entity<View>(entity =>
             {
                 entity.ToTable("visualizacoes");
@@ -108,6 +126,7 @@ namespace LibraryApp.Infrastructure.Context
                       .HasForeignKey(v => v.BookId);
             });
 
+            // Mapeamento da entidade Download
             builder.Entity<Download>(entity =>
             {
                 entity.ToTable("downloads");
@@ -124,19 +143,25 @@ namespace LibraryApp.Infrastructure.Context
         }
     }
 
+    // Fábrica do contexto usada em tempo de design (ex: migrations)
     public class DataContextFactory : IDesignTimeDbContextFactory<DataContext>
     {
+        // Cria o contexto para execução de migrations
         public DataContext CreateDbContext(string[] args)
         {
+            // Builder das opções do DbContext
             var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
 
+            // Leitura das configurações do arquivo appsettings
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), @"../LibraryApp.Api/appsettings.Development.json"), optional: false, reloadOnChange: true)
                 .Build();
 
+            // Configuração da conexão com PostgreSQL
             optionsBuilder.UseNpgsql(configuration.GetConnectionString("postgres"));
 
+            // Retorna o contexto configurado
             return new DataContext(optionsBuilder.Options);
         }
     }

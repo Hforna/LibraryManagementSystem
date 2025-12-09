@@ -11,12 +11,17 @@ using Microsoft.Extensions.Logging;
 
 namespace LibraryApp.Infrastructure.Services
 {
+    // Serviço responsável por enviar e-mails HTML usando o SendGrid
     public class EmailService : IEmailService
     {
+        // Cliente do SendGrid utilizado para envio de e-mails
         private readonly SendGridClient _sendGrid;
+        // Endereço de e-mail padrão do remetente
         private readonly string _fromEmail;
+        // Nome de exibição padrão do remetente
         private readonly string _fromUserName;
 
+        // Inicializa o EmailService com o cliente do SendGrid e dados do remetente
         public EmailService(SendGridClient sendGrid, string fromEmail, string fromUserName)
         {
             _sendGrid = sendGrid;
@@ -24,6 +29,7 @@ namespace LibraryApp.Infrastructure.Services
             _fromUserName = fromUserName;
         }
 
+        // Monta o template HTML do e-mail e injeta o conteúdo fornecido
         private string GetBodyTemplate(string body)
         {
             return $@"<!doctype html>
@@ -32,6 +38,7 @@ namespace LibraryApp.Infrastructure.Services
             <meta charset=""utf-8"">
             <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
             <title>Email</title>
+            <!-- Estilos CSS incorporados para layout e responsividade do e-mail -->
             <style>
               body {{ margin:0; padding:0; background-color:#f3f4f6; }}
               table {{ border-collapse:collapse; }}
@@ -58,25 +65,30 @@ namespace LibraryApp.Infrastructure.Services
             </style>
             </head>
             <body>
+            <!-- Texto de pré-visualização exibido na caixa de entrada -->
             <span class=""preheader"">Resumo curto do e-mail que aparece na caixa de entrada.</span>
             <table class=""wrapper"" width=""100%"" cellpadding=""0"" cellspacing=""0"" role=""presentation"">
               <tr>
                 <td align=""center"">
                   <table class=""container"" width=""600"" cellpadding=""0"" cellspacing=""0"" role=""presentation"">
                     <tr>
+                      <!-- Cabeçalho do e-mail com título -->
                       <td class=""header"">
                         <h1 style=""margin:0; font-family:Arial, Helvetica, sans-serif; font-size:24px;"">Assunto do Email</h1>
                       </td>
                     </tr>
                     <tr>
+                      <!-- Imagem principal -->
                       <td>
                         <img src=""https://via.placeholder.com/600x220.png?text=Imagem+Hero"" alt=""Imagem"" width=""600"" style=""display:block;"">
                       </td>
                     </tr>
                     <tr>
+                      <!-- Conteúdo principal do e-mail -->
                       <td class=""content"">
                         <p class=""p"">{body}</p>
                         <div class=""spacer""></div>
+                        <!-- Seção de benefícios em duas colunas -->
                         <table class=""two-col"" width=""100%"" cellpadding=""0"" cellspacing=""0"" role=""presentation"">
                           <tr>
                             <td class=""col col-50"" style=""font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#0f172a;"">
@@ -95,6 +107,7 @@ namespace LibraryApp.Infrastructure.Services
                       </td>
                     </tr>
                     <tr>
+                      <!-- Rodapé do e-mail -->
                       <td class=""footer"">
                         <p style=""margin:0 0 8px 0;"">Endereço da empresa • Cidade, Estado</p>
                         <p style=""margin:0;"">Você está recebendo este e-mail porque se inscreveu em nossa lista.</p>
@@ -110,13 +123,20 @@ namespace LibraryApp.Infrastructure.Services
             ";
         }
 
+        // Envia o e-mail usando SendGrid com base no DTO informado
         public async Task SendEmail(SendEmailDto dto)
         {
+            // Endereço do destinatário
             var toEmail = new EmailAddress(dto.ToEmail, dto.ToUserName);
+            // Endereço do remetente
             var fromEmail = new EmailAddress(_fromEmail, _fromUserName);
+            // Assunto do e-mail
             var subject = dto.Subject;
+            // Geração do corpo HTML do e-mail
             var htmlContent = GetBodyTemplate(dto.Body);
+            // Criação da mensagem de e-mail do SendGrid
             var msg = MailHelper.CreateSingleEmail(fromEmail, toEmail, subject, string.Empty, htmlContent);
+            // Envio do e-mail de forma assíncrona
             var response = await _sendGrid.SendEmailAsync(msg);
         }
     }

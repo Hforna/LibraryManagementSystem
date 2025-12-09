@@ -7,6 +7,7 @@ using System.Text;
 
 namespace LibraryApp.Infrastructure.Context
 {
+    //Repositorio generico para persistir e ler qualquer tipo de dado que implement a interface ientity
     public class GenericRepository : IGenericRepository
     {
         private readonly DataContext _context;
