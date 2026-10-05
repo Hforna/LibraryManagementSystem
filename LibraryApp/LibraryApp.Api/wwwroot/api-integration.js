@@ -6,26 +6,37 @@ const API_CONFIG = {
         login: '/login',
         loginGoogle: '/login/google',
         loginGoogleCallback: '/login/google-callback',
-        register: '/users',
         confirmEmail: '/users/confirm/email',
+        changePassword: '/users/me/password',
+        forgotPassword: '/users/password/forgot',
+        resetPassword: '/users/password/reset',
         refreshToken: '/token/refresh-token',
         
         // Livros
         books: '/books',
         booksPaginated: (page, perPage) => `/books/filter?page=${page}&perPage=${perPage}`,
+        myBooks: (page, perPage) => `/books/mine?page=${page}&perPage=${perPage}`,
         getBook: (id) => `/books/${id}`,
         updateBook: (id) => `/books/${id}`,
         deleteBook: (id) => `/books/${id}`,
-        
+
         // Comentários
         getBookComments: (bookId, page, perPage) => `/books/${bookId}/comments?page=${page}&perPage=${perPage}`,
         createComment: (bookId) => `/books/${bookId}/comments`,
         getComment: (commentId) => `/comments/${commentId}`,
         deleteComment: (commentId) => `/comments/${commentId}`,
-        
+
         // Likes
         likeBook: (bookId) => `/books/${bookId}/like`,
         unlikeBook: (bookId) => `/books/${bookId}/unlike`,
+
+        // Administração
+        adminDashboard: '/admin/dashboard',
+        adminCreateUser: '/admin/users',
+        adminBooksPending: (page, perPage) => `/admin/books/pending?page=${page}&perPage=${perPage}`,
+        adminApproveBook: (bookId) => `/admin/books/${bookId}/approve`,
+        adminRejectBook: (bookId) => `/admin/books/${bookId}/reject`,
+        adminDownloadBook: (bookId) => `/admin/books/${bookId}/download`,
     },
     storage: {
         accessToken: 'access_token',
@@ -152,6 +163,11 @@ class ApiClient {
             return new Error(data.message);
         }
 
+        // Erros do backend (ProblemDetails) trazem a mensagem em "detail"
+        if (data && data.detail) {
+            return new Error(data.detail);
+        }
+
         const defaultMessages = {
             400: 'Requisição inválida. Verifique os dados enviados.',
             401: 'Não autorizado. Faça login novamente.',
@@ -224,6 +240,29 @@ class ApiClient {
     static delete(endpoint, options = {}) {
         return this.request(endpoint, { ...options, method: 'DELETE' });
     }
+
+    // Baixa um arquivo binário (ex: PDF) autenticado, com a mesma lógica de renovação de token das demais requisições
+    static async getBlob(endpoint) {
+        const url = API_CONFIG.baseURL + endpoint;
+        const doFetch = (token) => fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+
+        let response = await doFetch(TokenManager.getAccessToken());
+
+        if (response.status === 401) {
+            const refreshed = await this.refreshAccessToken();
+            if (!refreshed) {
+                this.handleUnauthorized();
+                throw new Error('Sessão expirada. Faça login novamente.');
+            }
+            response = await doFetch(TokenManager.getAccessToken());
+        }
+
+        if (!response.ok) {
+            throw new Error('Não foi possível baixar o arquivo.');
+        }
+
+        return response.blob();
+    }
 }
 
 // Serviço de autenticação
@@ -256,29 +295,6 @@ class AuthService {
         }
     }
 
-    static async register(userName, email, password) {
-        try {
-            const response = await ApiClient.post(
-                API_CONFIG.endpoints.register,
-                { userName, email, password },
-                { skipAuth: true }
-            );
-
-            if (response.success && response.data) {
-                return { 
-                    success: true, 
-                    user: response.data,
-                    message: 'Conta criada! Verifique seu email para confirmar o cadastro.'
-                };
-            }
-
-            return { success: false, error: 'Resposta inválida do servidor' };
-
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    }
-
     static async confirmEmail(email, token) {
         try {
             const response = await ApiClient.get(
@@ -288,6 +304,36 @@ class AuthService {
 
             return { success: true };
 
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Altera a senha do usuário logado (exige a senha atual)
+    static async changePassword(currentPassword, newPassword) {
+        try {
+            await ApiClient.put(API_CONFIG.endpoints.changePassword, { currentPassword, newPassword });
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Pede o link de redefinição de senha por e-mail (a resposta é a mesma exista ou não a conta)
+    static async forgotPassword(email) {
+        try {
+            await ApiClient.post(API_CONFIG.endpoints.forgotPassword, { email }, { skipAuth: true });
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Redefine a senha com o token recebido no link do e-mail
+    static async resetPassword(email, token, newPassword) {
+        try {
+            await ApiClient.post(API_CONFIG.endpoints.resetPassword, { email, token, newPassword }, { skipAuth: true });
+            return { success: true };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -344,10 +390,15 @@ class AuthService {
             const payload = parts[1];
             const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
 
+            const roleKey = Object.keys(decoded).find(k => k.toLowerCase().includes('role'));
+            const roleValue = roleKey ? decoded[roleKey] : [];
+            const roles = Array.isArray(roleValue) ? roleValue : (roleValue ? [roleValue] : []);
+
             return {
                 userId: decoded[Object.keys(decoded).find(k => k.includes('sid'))] || decoded.sid,
                 email: decoded.email || decoded[Object.keys(decoded).find(k => k.includes('email'))],
                 userName: decoded.name || decoded.userName || decoded[Object.keys(decoded).find(k => k.includes('name'))],
+                roles: roles,
                 exp: decoded.exp,
                 iat: decoded.iat
             };
@@ -355,6 +406,17 @@ class AuthService {
             console.error('Erro ao decodificar token:', error);
             return null;
         }
+    }
+
+    // Verifica se o usuário autenticado possui o papel informado (ex: 'Admin', 'Student')
+    static hasRole(role) {
+        const user = this.getCurrentUser();
+        if (!user || !Array.isArray(user.roles)) return false;
+        return user.roles.some(r => r.toLowerCase() === role.toLowerCase());
+    }
+
+    static isAdmin() {
+        return this.hasRole('Admin');
     }
 }
 
@@ -483,6 +545,81 @@ class BookService {
             return { success: false, error: error.message };
         }
     }
+
+    // Lista, paginado, os livros enviados pelo estudante autenticado (com a situação de cada um)
+    static async getMyBooks(page = 1, perPage = 10) {
+        try {
+            const response = await ApiClient.get(API_CONFIG.endpoints.myBooks(page, perPage));
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+}
+
+// Serviço do painel do administrador (dashboard e moderação de livros)
+class AdminService {
+    static async getDashboard() {
+        try {
+            const response = await ApiClient.get(API_CONFIG.endpoints.adminDashboard);
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Cria a conta de um usuário (role: 'Student' ou 'Admin'). Não existe auto-cadastro: só o administrador cria contas
+    static async createUser(userName, email, password, role = 'Student') {
+        try {
+            const response = await ApiClient.post(
+                API_CONFIG.endpoints.adminCreateUser,
+                { userName, email, password, role }
+            );
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async getBooksPending(page = 1, perPage = 10) {
+        try {
+            const response = await ApiClient.get(API_CONFIG.endpoints.adminBooksPending(page, perPage));
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async approveBook(bookId) {
+        try {
+            const response = await ApiClient.put(API_CONFIG.endpoints.adminApproveBook(bookId), {});
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async rejectBook(bookId, reason) {
+        try {
+            const response = await ApiClient.put(API_CONFIG.endpoints.adminRejectBook(bookId), { reason });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Baixa o arquivo original do livro (requer autenticação, por isso não pode ser um link direto) e o abre em uma nova aba
+    static async downloadBookForReview(bookId) {
+        try {
+            const blob = await ApiClient.getBlob(API_CONFIG.endpoints.adminDownloadBook(bookId));
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 // Serviço de comentários
@@ -539,7 +676,10 @@ function initializeAuth() {
     const emailToken = urlParams.get('token');
     const email = urlParams.get('email');
 
-    if (emailToken && email) {
+    // A página de redefinição de senha usa os mesmos parâmetros (?email=&token=), mas o token é de outro tipo
+    const isResetPasswordPage = window.location.pathname.includes('reset-password.html');
+
+    if (emailToken && email && !isResetPasswordPage) {
         handleEmailConfirmation(email, emailToken);
         return;
     }
@@ -599,6 +739,7 @@ window.ApiClient = ApiClient;
 window.AuthService = AuthService;
 window.BookService = BookService;
 window.CommentService = CommentService;
+window.AdminService = AdminService;
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeAuth);

@@ -39,7 +39,7 @@ namespace LibraryApp.Infrastructure.Context
 
             // Renomeação das tabelas do Identity
             builder.Entity<User>().ToTable("usuarios");
-            builder.Entity<IdentityRole<long>>().ToTable("papeis");
+            builder.Entity<Role>().ToTable("papeis");
             builder.Entity<IdentityUserRole<long>>().ToTable("usuarios_papeis");
             builder.Entity<IdentityUserClaim<long>>().ToTable("usuarios_reivindicacoes");
             builder.Entity<IdentityUserLogin<long>>().ToTable("usuarios_logins");
@@ -56,6 +56,10 @@ namespace LibraryApp.Infrastructure.Context
                       .WithMany(u => u.Books)
                       .HasForeignKey(b => b.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(b => b.Status)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
             });
 
             // Mapeamento da entidade Categoria

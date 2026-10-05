@@ -67,18 +67,46 @@ public class BookRepository : IBookRepository
             .SingleOrDefaultAsync(d => d.UserId == userId && d.BookId == bookId);
     }
 
-    public async Task<Pagination<Book>> GetBooksPaginated(int page, int perPage)
+    public async Task<Pagination<Book>> GetBooksPaginated(int page, int perPage, BookStatus? status = null)
+    {
+        var query = _context.Books
+            .Include(d => d.User)
+            .Include(d => d.Views)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (status is not null)
+            query = query.Where(d => d.Status == status);
+
+        return await query
+            .OrderBy(d => d.Id)
+            .AsPaginationAsync(page, perPage);
+    }
+
+    public async Task<Pagination<Book>> GetBooksByUserPaginated(long userId, int page, int perPage)
     {
         return await _context.Books
             .Include(d => d.User)
             .Include(d => d.Views)
+            .Include(d => d.Likes)
             .AsNoTracking()
-            .OrderBy(d => d.Id)
+            .Where(d => d.UserId == userId)
+            .OrderByDescending(d => d.CreatedAt)
             .AsPaginationAsync(page, perPage);
     }
 
     public async Task<int> GetTotalViewsOfABook(long bookId)
     {
         return await _context.Views.Where(d => d.BookId == bookId).CountAsync();
+    }
+
+    public async Task<int> CountBooksByStatus(BookStatus status)
+    {
+        return await _context.Books.CountAsync(d => d.Status == status);
+    }
+
+    public async Task<int> CountDownloads()
+    {
+        return await _context.Downloads.CountAsync();
     }
 }

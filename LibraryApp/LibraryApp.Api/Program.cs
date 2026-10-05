@@ -1,5 +1,7 @@
 using LibraryApp.Api.Middlewares;
 using LibraryApp.Application;
+using LibraryApp.Domain.Constants;
+using LibraryApp.Domain.Entities;
 using LibraryApp.Infrastructure;
 using LibraryApp.Infrastructure.Context;
 using LibraryApp.Infrastructure.Services;
@@ -7,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -82,6 +85,14 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
     dbContext.Database.Migrate();
+
+    // Garante que os papéis padrão (Student, Admin) existam antes de qualquer cadastro de usuário
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+    foreach (var roleName in new[] { Roles.Student, Roles.Admin })
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+            await roleManager.CreateAsync(new Role(roleName));
+    }
 }
 
 

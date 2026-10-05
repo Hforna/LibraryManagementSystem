@@ -14,5 +14,7 @@ namespace LibraryApp.Domain.Services
         public Task<User?> GetUserByToken();
         public long? GetUserIdByToken();
         public List<Claim> GetTokenClaims();
+        public List<string> GetUserRoles();
+        public bool CurrentUserIsInRole(string role);
     }
 }

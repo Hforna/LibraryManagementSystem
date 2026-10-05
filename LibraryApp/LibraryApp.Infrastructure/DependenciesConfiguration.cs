@@ -47,6 +47,9 @@ namespace LibraryApp.Infrastructure
              .AddEntityFrameworkStores<DataContext>()
              .AddDefaultTokenProviders()
              .AddUserManager<UserManager<User>>();
+
+            // Tokens gerados pelo Identity (ex: link de redefinição de senha) expiram em 1 hora
+            services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromHours(1));
         }
 
         static void AddRepositories(IServiceCollection services)

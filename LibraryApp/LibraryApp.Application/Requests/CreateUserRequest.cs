@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.RegularExpressions;
+using LibraryApp.Domain.Constants;
 
 namespace LibraryApp.Application.Requests
 {
@@ -15,5 +16,11 @@ namespace LibraryApp.Application.Requests
         public string Password { get; set; }
         [RegularExpression("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", ErrorMessage = "Formato invalido de e-mail")] // Endereço de e-mail do usuário
         public string Email { get; set; }
+    }
+
+    // Classe de requisição usada pelo administrador para criar a conta de um usuário (estudante ou administrador)
+    public class AdminCreateUserRequest : CreateUserRequest
+    {
+        public string Role { get; set; } = Roles.Student; // Papel da nova conta: "Student" (padrão) ou "Admin"
     }
 }

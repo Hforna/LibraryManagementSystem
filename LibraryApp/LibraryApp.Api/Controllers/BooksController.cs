@@ -77,6 +77,25 @@ namespace LibraryApp.Api.Controllers
         }
 
         /// <summary>
+        /// Lista, de forma paginada, os livros enviados pelo estudante autenticado, incluindo os que ainda estão em análise ou foram reprovados.
+        /// </summary>
+        /// <param name="page">Número da página a ser recuperada (começa em 1).</param>
+        /// <param name="perPage">A quantidade de livros por página.</param>
+        /// <returns>Um <see cref="MyBooksPaginatedResponse"/> contendo os livros do estudante e a situação de cada um.</returns>
+        /// <response code="200">Retorna a lista paginada dos livros do estudante.</response>
+        /// <response code="401">Se o usuário não estiver autenticado.</response>
+        [HttpGet("mine")]
+        [UserAuthenticated]
+        [ProducesResponseType(typeof(MyBooksPaginatedResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetMyBooks([FromQuery] int page, [FromQuery] int perPage)
+        {
+            var result = await _bookService.GetMyBooks(page, perPage);
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Deleta um livro do sistema de biblioteca.
         /// </summary>
         /// <param name="bookId">O identificador único do livro a ser deletado.</param>

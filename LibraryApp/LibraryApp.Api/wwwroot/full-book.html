@@ -141,8 +141,14 @@
             const user = AuthService.getCurrentUser();
 
             if (user) {
+                const adminLink = AuthService.isAdmin()
+                    ? `<a href="admin.html" class="btn-back">Painel Admin</a>`
+                    : '';
+
                 userSection.innerHTML = `
                                 <a href="index.html" class="btn-back">Voltar</a>
+                                <a href="my-books.html" class="btn-back">Meus Livros</a>
+                                ${adminLink}
                                 <button class="btn-logout" onclick="logout()">Sair</button>
                             `;
             } else {

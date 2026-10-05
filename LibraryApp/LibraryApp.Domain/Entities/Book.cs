@@ -35,7 +35,19 @@ namespace LibraryApp.Domain.Entities
         public string CoverName { get; set; }
 
         [Column("criado_em")] // Data e hora de criação do registro
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column("status")] // Situação do livro no fluxo de moderação (pendente, publicado, reprovado)
+        public BookStatus Status { get; set; } = BookStatus.PendingAnalysis;
+
+        [Column("motivo_reprovacao")] // Motivo informado pelo administrador ao reprovar o livro
+        public string? RejectionReason { get; set; }
+
+        [Column("revisado_por")] // ID do administrador que analisou o livro
+        public long? ReviewedByUserId { get; set; }
+
+        [Column("revisado_em")] // Data e hora em que o livro foi analisado (aprovado/reprovado)
+        public DateTime? ReviewedAt { get; set; }
 
         public ICollection<BookCategory> BookCategories { get; set; } // Usa tabela intermediária BookCategory
         public ICollection<Like> Likes { get; set; } // Curtidas que este livro recebeu

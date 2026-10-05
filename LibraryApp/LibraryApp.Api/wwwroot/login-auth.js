@@ -6,9 +6,6 @@ function showAuthForm(formType) {
     if (formType === 'login') {
         document.querySelectorAll('.auth-tab')[0].classList.add('active');
         document.getElementById('loginForm').classList.add('active');
-    } else if (formType === 'register') {
-        document.querySelectorAll('.auth-tab')[1].classList.add('active');
-        document.getElementById('registerForm').classList.add('active');
     } else if (formType === 'forgot') {
         document.getElementById('forgotForm').classList.add('active');
     }
@@ -58,91 +55,6 @@ async function login(event) {
 }
 
 // ===========================================
-// SISTEMA DE CADASTRO (API REAL)
-// ===========================================
-
-async function register(event) {
-    event.preventDefault();
-    
-    const nick = document.getElementById('registerNick').value.trim();
-    const email = document.getElementById('registerEmail').value.trim();
-    const password = document.getElementById('registerPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const acceptTerms = document.getElementById('acceptTerms').checked;
-
-    // Validações client-side
-    if (!nick || !email || !password || !confirmPassword) {
-        showNotification('Por favor, preencha todos os campos obrigatórios.', 'error');
-        return;
-    }
-
-    if (nick.length < 4) {
-        showNotification('O apelido deve ter no mínimo 4 caracteres.', 'error');
-        addValidationClass('registerNick', 'error');
-        return;
-    }
-
-    if (!validateEmail(email)) {
-        showNotification('Por favor, digite um e-mail válido.', 'error');
-        addValidationClass('registerEmail', 'error');
-        return;
-    }
-
-    if (password.length < 8) {
-        showNotification('A senha deve ter no mínimo 8 caracteres.', 'error');
-        addValidationClass('registerPassword', 'error');
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        showNotification('As senhas não coincidem.', 'error');
-        addValidationClass('confirmPassword', 'error');
-        return;
-    }
-
-    if (!acceptTerms) {
-        showNotification('Você deve aceitar os termos de uso.', 'error');
-        return;
-    }
-
-    // Mostrar loading
-    showButtonLoading('registerForm');
-
-    try {
-        // Chamar API real
-        const result = await AuthService.register(nick, email, password);
-
-        if (result.success) {
-            hideButtonLoading('registerForm');
-            
-            // Mostrar mensagem de sucesso com instrução sobre email
-            showNotification(result.message || 'Conta criada! Verifique seu email.', 'success');
-            
-            // Limpar formulário
-            document.getElementById('registerNick').value = '';
-            document.getElementById('registerEmail').value = '';
-            document.getElementById('registerPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-            document.getElementById('acceptTerms').checked = false;
-            
-            // Trocar para formulário de login após 3 segundos
-            setTimeout(() => {
-                showAuthForm('login');
-                showNotification('Confirme seu email antes de fazer login.', 'info');
-            }, 3000);
-            
-        } else {
-            hideButtonLoading('registerForm');
-            showNotification(result.error || 'Erro ao criar conta.', 'error');
-        }
-    } catch (error) {
-        hideButtonLoading('registerForm');
-        showNotification('Erro ao conectar com o servidor. Tente novamente.', error);
-        console.error('Erro no cadastro:', error);
-    }
-}
-
-// ===========================================
 // RECUPERAÇÃO DE SENHA
 // ===========================================
 
@@ -158,16 +70,20 @@ async function resetPassword(event) {
 
     showButtonLoading('forgotForm');
 
-    // Simular envio (backend não tem endpoint ainda)
+    const result = await AuthService.forgotPassword(credential);
+    hideButtonLoading('forgotForm');
+
+    if (!result.success) {
+        showNotification(result.error || 'Erro ao enviar o link. Tente novamente.', 'error');
+        return;
+    }
+
+    showNotification('Se este e-mail estiver cadastrado, você receberá um link para criar uma nova senha.', 'info');
+
     setTimeout(() => {
-        showNotification('Se este e-mail estiver cadastrado, você receberá instruções.', 'info');
-        hideButtonLoading('forgotForm');
-        
-        setTimeout(() => {
-            showAuthForm('login');
-            document.getElementById('forgotCredential').value = '';
-        }, 3000);
-    }, 1500);
+        showAuthForm('login');
+        document.getElementById('forgotCredential').value = '';
+    }, 3000);
 }
 
 // ===========================================
@@ -183,14 +99,6 @@ function loginWithGoogle() {
 
 function loginWithFacebook() {
     showNotification('Login com Facebook não disponível no momento.', 'warning');
-}
-
-function registerWithGoogle() {
-    loginWithGoogle();
-}
-
-function registerWithFacebook() {
-    loginWithFacebook();
 }
 
 // ===========================================

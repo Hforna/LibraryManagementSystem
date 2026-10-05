@@ -48,6 +48,24 @@ namespace LibraryApp.Infrastructure.Services
             await client.Files.DeleteV2Async(fileName); // Exclui o arquivo usando a versão 2 da API de deleção
         }
 
+        // Baixa o conteúdo de um arquivo armazenado no Dropbox (usado pelo administrador para validar o livro)
+        public async Task<Stream> DownloadFile(string fileName)
+        {
+            using var client = new DropboxClient(_accessToken);
+            using var response = await client.Files.DownloadAsync($"{BaseFilePath}{fileName}");
+
+            // Copia para um MemoryStream antes de descartar o client/response, já que ambos fecham o stream de rede ao serem liberados
+            var memoryStream = new MemoryStream();
+            using (var contentStream = await response.GetContentAsStreamAsync())
+            {
+                await contentStream.CopyToAsync(memoryStream);
+            }
+
+            memoryStream.Position = 0;
+
+            return memoryStream;
+        }
+
         // Faz upload de um arquivo para o Dropbox
         public async Task UploadFile(Stream file, string fileName)
         {

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Livros - O Caminho do Saber</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="admin-styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-section" onclick="goToHome()">
+                    <div class="logo-text">O Caminho do Saber</div>
+                </div>
+
+                <div class="user-section" id="userSection">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+
+            <h1>📚 Meus Livros</h1>
+            <p>Acompanhe a situação dos livros que você enviou</p>
+        </div>
+
+        <!-- Lista de livros do estudante -->
+        <div class="comments-section">
+            <div id="myBooksList" class="manage-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 15px;">Carregando seus livros...</p>
+                </div>
+            </div>
+
+            <!-- Paginação -->
+            <div id="paginationContainer" class="pagination" style="display: none;">
+                <button id="btnPrevPage" onclick="goToPreviousPage()">‹ Anterior</button>
+                <span class="pagination-info" id="paginationInfo">Página 1 de 1</span>
+                <button id="btnNextPage" onclick="goToNextPage()">Próxima ›</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificação -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Scripts -->
+    <script src="api-integration.js"></script>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        const perPage = 10;
+
+        const statusLabels = {
+            PendingAnalysis: 'Em análise',
+            Published: 'Publicado',
+            Rejected: 'Reprovado'
+        };
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function goToHome() {
+            window.location.href = 'index.html';
+        }
+
+        function updateAuthUI() {
+            const userSection = document.getElementById('userSection');
+            const user = AuthService.getCurrentUser();
+
+            const adminLink = AuthService.isAdmin()
+                ? `<a href="admin.html" class="btn-back">Painel Admin</a>`
+                : '';
+
+            userSection.innerHTML = `
+                <a href="index.html" class="btn-back">Voltar</a>
+                ${adminLink}
+                <button class="btn-logout" onclick="logout()">Sair</button>
+            `;
+        }
+
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                AuthService.logout();
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function loadMyBooks(page = 1) {
+            const list = document.getElementById('myBooksList');
+            list.innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top:15px;">Carregando seus livros...</p></div>';
+
+            const result = await BookService.getMyBooks(page, perPage);
+
+            if (!result.success || !result.data) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📕</div>
+                        <p>Erro ao carregar seus livros. ${escapeHtml(result.error || '')}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = result.data;
+            currentPage = data.currentPage || 1;
+            totalPages = data.totalPages || 1;
+
+            renderBooks(data.books || []);
+            updatePagination(data);
+        }
+
+        function renderBooks(books) {
+            const list = document.getElementById('myBooksList');
+
+            if (!books.length) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📖</div>
+                        <p>Você ainda não enviou nenhum livro.</p>
+                        <a href="index.html" class="btn-sm btn-view" style="display:inline-block; margin-top:15px;">Enviar meu primeiro livro</a>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = books.map(book => {
+                const coverHtml = book.coverUrl
+                    ? `<img src="${escapeHtml(book.coverUrl)}" alt="${escapeHtml(book.title)}">`
+                    : '📖';
+
+                const statusClass = `status-${(book.status || '').toLowerCase()}`;
+                const statusLabel = statusLabels[book.status] || book.status;
+
+                const uploadDate = book.uploadedAt
+                    ? new Date(book.uploadedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+                    : '';
+
+                const rejectionHtml = (book.status === 'Rejected' && book.rejectionReason)
+                    ? `<div class="manage-rejection-reason">✋ Motivo da reprovação: ${escapeHtml(book.rejectionReason)}</div>`
+                    : '';
+
+                const canView = book.status === 'Published';
+
+                return `
+                    <div class="manage-card">
+                        <div class="manage-cover">${coverHtml}</div>
+                        <div class="manage-info">
+                            <h3>${escapeHtml(book.title)}</h3>
+                            <div class="manage-meta">
+                                <span class="status-badge ${statusClass}">${escapeHtml(statusLabel)}</span>
+                                <span>📅 Enviado em ${uploadDate}</span>
+                                ${book.status === 'Published' ? `<span>👁️ ${book.viewsCount || 0} visualizações</span><span>❤️ ${book.likesCount || 0} curtidas</span>` : ''}
+                            </div>
+                            ${rejectionHtml}
+                        </div>
+                        <div class="manage-actions">
+                            <a class="btn-sm btn-view" href="full-book.html?id=${book.id}" ${canView ? '' : 'style="pointer-events:none; opacity:0.5;"'}>Ver detalhes</a>
+                            <button class="btn-sm btn-delete" onclick="deleteBook(${book.id})">Excluir</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteBook(bookId) {
+            if (!confirm('Deseja realmente excluir este livro? Essa ação não pode ser desfeita.')) return;
+
+            const result = await BookService.deleteBook(bookId);
+
+            if (result.success) {
+                showNotification('Livro excluído com sucesso', 'success');
+                loadMyBooks(currentPage);
+            } else {
+                showNotification(result.error || 'Erro ao excluir livro', 'error');
+            }
+        }
+
+        function updatePagination(data) {
+            const container = document.getElementById('paginationContainer');
+            const info = document.getElementById('paginationInfo');
+            const btnPrev = document.getElementById('btnPrevPage');
+            const btnNext = document.getElementById('btnNextPage');
+
+            if (totalPages > 1) {
+                container.style.display = 'flex';
+                info.textContent = `Página ${currentPage} de ${totalPages}`;
+                btnPrev.disabled = !data.hasPreviousPage;
+                btnNext.disabled = !data.hasNextPage;
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function goToPreviousPage() {
+            if (currentPage > 1) loadMyBooks(currentPage - 1);
+        }
+
+        function goToNextPage() {
+            if (currentPage < totalPages) loadMyBooks(currentPage + 1);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initApp = () => {
+                if (typeof AuthService === 'undefined') {
+                    setTimeout(initApp, 100);
+                    return;
+                }
+
+                if (!AuthService.isAuthenticated()) {
+                    showNotification('Faça login para ver seus livros', 'info');
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                    return;
+                }
+
+                updateAuthUI();
+                loadMyBooks(1);
+            };
+
+            initApp();
+        });
+    </script>
+</body>
+</html>

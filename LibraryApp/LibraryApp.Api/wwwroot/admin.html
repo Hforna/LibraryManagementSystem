@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Administrador - O Caminho do Saber</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="admin-styles.css">
+    <link rel="stylesheet" type="text/css" href="admin-dashboard.css">
+</head>
+<body class="admin-shell">
+    <!-- Estado de acesso negado -->
+    <div id="forbiddenState" class="empty-state" style="display:none; min-height:100vh; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="empty-state-icon">🔒</div>
+        <p>Você não tem permissão de administrador para acessar esta página.</p>
+        <a href="index.html" class="btn-sm btn-view" style="display:inline-block; margin-top:15px;">Voltar para a Biblioteca</a>
+    </div>
+
+    <!-- Shell do painel -->
+    <div id="adminShell" class="admin-shell-layout" style="display:none;">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-logo">📚</span>
+                <span class="sidebar-brand-text">O Caminho do Saber<br><small style="font-weight:400; opacity:0.7;">Painel do Administrador</small></span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="sidebar-link active" data-view="dashboard" onclick="switchView('dashboard')">
+                    <span class="sidebar-icon">📊</span> Dashboard
+                </button>
+                <button class="sidebar-link" data-view="pending" onclick="switchView('pending')">
+                    <span class="sidebar-icon">📋</span> Livros Pendentes
+                    <span class="sidebar-badge" id="pendingBadge" style="display:none;">0</span>
+                </button>
+                <button class="sidebar-link" data-view="admins" onclick="switchView('admins')">
+                    <span class="sidebar-icon">👤</span> Usuários
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="index.html" class="sidebar-link">
+                    <span class="sidebar-icon">🏠</span> Voltar ao Site
+                </a>
+                <a href="my-books.html" class="sidebar-link">
+                    <span class="sidebar-icon">📖</span> Meus Livros
+                </a>
+                <button class="sidebar-link sidebar-logout" onclick="logout()">
+                    <span class="sidebar-icon">🚪</span> Sair
+                </button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <button class="sidebar-toggle" onclick="openSidebar()">☰</button>
+                <h1 id="viewTitle">Dashboard</h1>
+                <div class="admin-user-chip" id="adminUserChip"></div>
+            </header>
+
+            <!-- VIEW: Dashboard -->
+            <section id="view-dashboard" class="admin-view">
+                <div class="dashboard-highlight-grid" id="dashboardGrid">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+
+                <div class="dashboard-row">
+                    <div class="dashboard-panel">
+                        <h2>📈 Distribuição dos Livros</h2>
+                        <div class="status-chart-wrap" id="statusChartWrap">
+                            <div class="loading"><div class="spinner"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-panel">
+                        <h2>👥 Usuários da Plataforma</h2>
+                        <div id="usersBreakdown">
+                            <div class="loading"><div class="spinner"></div></div>
+                        </div>
+
+                        <div class="quick-actions" style="margin-top: 10px;">
+                            <button class="quick-action-btn" onclick="switchView('pending')">
+                                📋 Revisar Livros Pendentes
+                            </button>
+                            <button class="quick-action-btn" onclick="switchView('admins')">
+                                👤 Criar Usuário
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>🕒 Livros Recentes Aguardando Análise</h2>
+                        <button class="btn-sm btn-view" onclick="switchView('pending')">Ver Todos</button>
+                    </div>
+                    <div id="recentPendingList" class="manage-list compact"></div>
+                </div>
+            </section>
+
+            <!-- VIEW: Livros Pendentes -->
+            <section id="view-pending" class="admin-view" style="display:none;">
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>📋 Livros Aguardando Análise</h2>
+                    </div>
+
+                    <div id="pendingBooksList" class="manage-list">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 15px;">Carregando livros pendentes...</p>
+                        </div>
+                    </div>
+
+                    <div id="paginationContainer" class="pagination" style="display: none;">
+                        <button id="btnPrevPage" onclick="goToPreviousPage()">‹ Anterior</button>
+                        <span class="pagination-info" id="paginationInfo">Página 1 de 1</span>
+                        <button id="btnNextPage" onclick="goToNextPage()">Próxima ›</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: Usuários (não existe auto-cadastro: toda conta é criada aqui pelo administrador) -->
+            <section id="view-admins" class="admin-view" style="display:none;">
+                <div class="dashboard-highlight-grid" id="adminsSummaryGrid"></div>
+
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>👤 Criar Novo Usuário</h2>
+                    </div>
+                    <p style="color:#888; margin-bottom:20px;">Os usuários não podem se cadastrar sozinhos. Crie a conta aqui e envie o e-mail e a senha para a pessoa.</p>
+
+                    <form id="createUserForm" onsubmit="createUser(event)">
+                        <div class="form-group">
+                            <label>Username/Nick</label>
+                            <input type="text" id="adminUserName" required minlength="4">
+                        </div>
+                        <div class="form-group">
+                            <label>E-mail</label>
+                            <input type="email" id="adminEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Senha</label>
+                            <input type="password" id="adminPassword" required minlength="8">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de conta</label>
+                            <select id="newUserRole">
+                                <option value="Student" selected>🎓 Estudante</option>
+                                <option value="Admin">🛡️ Administrador</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary" id="createUserBtn" style="width:auto; padding:15px 30px;">Criar Usuário</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de reprovação -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeRejectModal()">✕</button>
+            <h2>Reprovar Livro</h2>
+            <form onsubmit="confirmRejectBook(event)">
+                <div class="form-group">
+                    <label>Motivo da reprovação *</label>
+                    <textarea id="rejectReason" rows="4" required maxlength="500" style="width:100%; padding:12px; border:2px solid #e9ecef; border-radius:8px; font-family:inherit;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Confirmar Reprovação</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notificação -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Scripts -->
+    <script src="api-integration.js"></script>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        const perPage = 10;
+        let bookIdToReject = null;
+        let latestDashboard = null;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function goToHome() {
+            window.location.href = 'index.html';
+        }
+
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                AuthService.logout();
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Sidebar (mobile)
+
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('open');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
+        }
+
+        // Navegação entre views
+
+        const viewTitles = {
+            dashboard: 'Dashboard',
+            pending: 'Livros Pendentes',
+            admins: 'Usuários'
+        };
+
+        function switchView(view) {
+            document.querySelectorAll('.admin-view').forEach(el => el.style.display = 'none');
+            document.getElementById(`view-${view}`).style.display = 'flex';
+
+            document.querySelectorAll('.sidebar-link[data-view]').forEach(el => {
+                el.classList.toggle('active', el.dataset.view === view);
+            });
+
+            document.getElementById('viewTitle').textContent = viewTitles[view] || 'Dashboard';
+            closeSidebar();
+
+            if (view === 'pending') loadPendingBooks(1);
+            if (view === 'admins') renderAdminsSummary();
+        }
+
+        // Identidade do usuário
+
+        function renderUserChip() {
+            const user = AuthService.getCurrentUser();
+            const chip = document.getElementById('adminUserChip');
+            if (!user) return;
+
+            const initial = (user.userName || user.email || 'A').charAt(0).toUpperCase();
+
+            chip.innerHTML = `
+                <div class="admin-user-avatar">${escapeHtml(initial)}</div>
+                <span class="admin-user-name">${escapeHtml(user.userName || user.email)}</span>
+            `;
+        }
+
+        // Dashboard
+
+        async function loadDashboard() {
+            const result = await AdminService.getDashboard();
+
+            if (!result.success || !result.data) {
+                document.getElementById('dashboardGrid').innerHTML = `<p style="color:#666;">Erro ao carregar o dashboard.</p>`;
+                return;
+            }
+
+            latestDashboard = result.data;
+            renderDashboardCards(latestDashboard);
+            renderStatusChart(latestDashboard);
+            renderUsersBreakdown(latestDashboard);
+            updatePendingBadge(latestDashboard.pendingAnalysisCount || 0);
+        }
+
+        function renderDashboardCards(d) {
+            const grid = document.getElementById('dashboardGrid');
+
+            grid.innerHTML = `
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-total">📚</div>
+                    <div>
+                        <div class="dashboard-number">${d.totalBooks ?? 0}</div>
+                        <div class="dashboard-label">Total de Livros</div>
+                    </div>
+                </div>
+                <div class="dashboard-card card-clickable" onclick="switchView('pending')">
+                    <div class="dashboard-card-icon icon-pending">⏳</div>
+                    <div>
+                        <div class="dashboard-number">${d.pendingAnalysisCount ?? 0}</div>
+                        <div class="dashboard-label">Em Análise</div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-published">✅</div>
+                    <div>
+                        <div class="dashboard-number">${d.publishedCount ?? 0}</div>
+                        <div class="dashboard-label">Publicados</div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-rejected">❌</div>
+                    <div>
+                        <div class="dashboard-number">${d.rejectedCount ?? 0}</div>
+                        <div class="dashboard-label">Reprovados</div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-students">🎓</div>
+                    <div>
+                        <div class="dashboard-number">${d.totalStudents ?? 0}</div>
+                        <div class="dashboard-label">Estudantes</div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-admins">🛡️</div>
+                    <div>
+                        <div class="dashboard-number">${d.totalAdmins ?? 0}</div>
+                        <div class="dashboard-label">Administradores</div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-downloads">⬇️</div>
+                    <div>
+                        <div class="dashboard-number">${d.totalDownloads ?? 0}</div>
+                        <div class="dashboard-label">Downloads</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStatusChart(d) {
+            const wrap = document.getElementById('statusChartWrap');
+            const total = (d.pendingAnalysisCount || 0) + (d.publishedCount || 0) + (d.rejectedCount || 0);
+
+            if (total === 0) {
+                wrap.innerHTML = `<p style="color:#999;">Nenhum livro cadastrado ainda.</p>`;
+                return;
+            }
+
+            const pubPct = (d.publishedCount || 0) / total * 100;
+            const pendPct = (d.pendingAnalysisCount || 0) / total * 100;
+            const rejPct = (d.rejectedCount || 0) / total * 100;
+
+            const gradient = `conic-gradient(
+                #28a745 0% ${pubPct}%,
+                #f5a623 ${pubPct}% ${pubPct + pendPct}%,
+                #dc3545 ${pubPct + pendPct}% 100%
+            )`;
+
+            wrap.innerHTML = `
+                <div class="status-donut" style="background:${gradient};">
+                    <div class="status-donut-center">
+                        <div class="donut-number">${total}</div>
+                        <div class="donut-label">livros</div>
+                    </div>
+                </div>
+                <div class="status-legend">
+                    <div class="legend-item"><span class="legend-dot" style="background:#28a745;"></span> Publicados <strong>${d.publishedCount ?? 0} (${pubPct.toFixed(0)}%)</strong></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#f5a623;"></span> Em análise <strong>${d.pendingAnalysisCount ?? 0} (${pendPct.toFixed(0)}%)</strong></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#dc3545;"></span> Reprovados <strong>${d.rejectedCount ?? 0} (${rejPct.toFixed(0)}%)</strong></div>
+                </div>
+            `;
+        }
+
+        function renderUsersBreakdown(d) {
+            const container = document.getElementById('usersBreakdown');
+            const totalUsers = (d.totalStudents || 0) + (d.totalAdmins || 0);
+            const studentsPct = totalUsers ? (d.totalStudents / totalUsers * 100) : 0;
+            const adminsPct = totalUsers ? (d.totalAdmins / totalUsers * 100) : 0;
+
+            container.innerHTML = `
+                <div class="user-bar-row">
+                    <div class="user-bar-label"><span>🎓 Estudantes</span><span>${d.totalStudents ?? 0}</span></div>
+                    <div class="user-bar-track"><div class="user-bar-fill fill-students" style="width:${studentsPct}%;"></div></div>
+                </div>
+                <div class="user-bar-row">
+                    <div class="user-bar-label"><span>🛡️ Administradores</span><span>${d.totalAdmins ?? 0}</span></div>
+                    <div class="user-bar-track"><div class="user-bar-fill fill-admins" style="width:${adminsPct}%;"></div></div>
+                </div>
+                <p style="color:#888; font-size:0.85rem; margin-top:10px;">${totalUsers} usuário(s) cadastrado(s) no total.</p>
+            `;
+        }
+
+        function updatePendingBadge(count) {
+            const badge = document.getElementById('pendingBadge');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        async function loadRecentPending() {
+            const list = document.getElementById('recentPendingList');
+            const result = await AdminService.getBooksPending(1, 5);
+
+            if (!result.success || !result.data || !result.data.books.length) {
+                list.innerHTML = `
+                    <div class="empty-state" style="padding:30px;">
+                        <div class="empty-state-icon" style="font-size:2.5rem;">✅</div>
+                        <p>Não há livros aguardando análise no momento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = result.data.books.map(book => renderPendingCard(book, true)).join('');
+        }
+
+        // Administradores
+
+        function renderAdminsSummary() {
+            const grid = document.getElementById('adminsSummaryGrid');
+            if (!latestDashboard) return;
+
+            grid.innerHTML = `
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-admins">🛡️</div>
+                    <div>
+                        <div class="dashboard-number">${latestDashboard.totalAdmins ?? 0}</div>
+                        <div class="dashboard-label">Administradores</div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon icon-students">🎓</div>
+                    <div>
+                        <div class="dashboard-number">${latestDashboard.totalStudents ?? 0}</div>
+                        <div class="dashboard-label">Estudantes</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function createUser(event) {
+            event.preventDefault();
+            const btn = document.getElementById('createUserBtn');
+            btn.disabled = true;
+            btn.textContent = 'Criando...';
+
+            const userName = document.getElementById('adminUserName').value;
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const role = document.getElementById('newUserRole').value;
+
+            const result = await AdminService.createUser(userName, email, password, role);
+
+            if (result.success) {
+                showNotification(role === 'Admin' ? 'Administrador criado com sucesso!' : 'Estudante criado com sucesso!', 'success');
+                event.target.reset();
+                loadDashboard().then(renderAdminsSummary);
+            } else {
+                showNotification(result.error || 'Erro ao criar usuário', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Criar Usuário';
+        }
+
+        // Livros pendentes
+
+        async function loadPendingBooks(page = 1) {
+            const list = document.getElementById('pendingBooksList');
+            list.innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top:15px;">Carregando livros pendentes...</p></div>';
+
+            const result = await AdminService.getBooksPending(page, perPage);
+
+            if (!result.success || !result.data) {
+                list.innerHTML = `<div class="empty-state"><p>Erro ao carregar livros pendentes.</p></div>`;
+                return;
+            }
+
+            const data = result.data;
+            currentPage = data.currentPage || 1;
+            totalPages = data.totalPages || 1;
+
+            renderPendingBooks(data.books || []);
+            updatePagination(data);
+        }
+
+        function renderPendingCard(book, compact) {
+            const coverHtml = book.coverUrl
+                ? `<img src="${escapeHtml(book.coverUrl)}" alt="${escapeHtml(book.title)}">`
+                : '📖';
+
+            const uploadDate = book.uploadedAt
+                ? new Date(book.uploadedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+                : '';
+
+            const categories = Array.isArray(book.categories) ? book.categories.join(', ') : '';
+
+            const description = compact ? '' : `<div class="manage-description">${escapeHtml(book.description || '')}</div>`;
+
+            return `
+                <div class="manage-card">
+                    <div class="manage-cover">${coverHtml}</div>
+                    <div class="manage-info">
+                        <h3>${escapeHtml(book.title)}</h3>
+                        <div class="manage-meta">
+                            <span>✍️ por ${escapeHtml(book.authorName || 'Desconhecido')}</span>
+                            <span>📅 ${uploadDate}</span>
+                            ${categories ? `<span>🏷️ ${escapeHtml(categories)}</span>` : ''}
+                        </div>
+                        ${description}
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-sm btn-download-review" onclick="downloadForReview(${book.id})">Baixar para Revisar</button>
+                        <button class="btn-sm btn-approve" onclick="approveBook(${book.id})">Aprovar</button>
+                        <button class="btn-sm btn-reject" onclick="openRejectModal(${book.id})">Reprovar</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPendingBooks(books) {
+            const list = document.getElementById('pendingBooksList');
+
+            if (!books.length) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <p>Não há livros aguardando análise no momento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = books.map(book => renderPendingCard(book, false)).join('');
+        }
+
+        async function downloadForReview(bookId) {
+            const result = await AdminService.downloadBookForReview(bookId);
+            if (!result.success) {
+                showNotification(result.error || 'Erro ao baixar o arquivo do livro', 'error');
+            }
+        }
+
+        async function approveBook(bookId) {
+            if (!confirm('Aprovar e publicar este livro?')) return;
+
+            const result = await AdminService.approveBook(bookId);
+
+            if (result.success) {
+                showNotification('Livro aprovado e publicado com sucesso!', 'success');
+                loadPendingBooks(currentPage);
+                loadDashboard();
+                loadRecentPending();
+            } else {
+                showNotification(result.error || 'Erro ao aprovar livro', 'error');
+            }
+        }
+
+        function openRejectModal(bookId) {
+            bookIdToReject = bookId;
+            document.getElementById('rejectReason').value = '';
+            document.getElementById('rejectModal').classList.add('show');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('show');
+            bookIdToReject = null;
+        }
+
+        async function confirmRejectBook(event) {
+            event.preventDefault();
+            const reason = document.getElementById('rejectReason').value.trim();
+
+            if (!reason) {
+                showNotification('Informe o motivo da reprovação', 'error');
+                return;
+            }
+
+            const result = await AdminService.rejectBook(bookIdToReject, reason);
+
+            if (result.success) {
+                showNotification('Livro reprovado', 'success');
+                closeRejectModal();
+                loadPendingBooks(currentPage);
+                loadDashboard();
+                loadRecentPending();
+            } else {
+                showNotification(result.error || 'Erro ao reprovar livro', 'error');
+            }
+        }
+
+        function updatePagination(data) {
+            const container = document.getElementById('paginationContainer');
+            const info = document.getElementById('paginationInfo');
+            const btnPrev = document.getElementById('btnPrevPage');
+            const btnNext = document.getElementById('btnNextPage');
+
+            if (totalPages > 1) {
+                container.style.display = 'flex';
+                info.textContent = `Página ${currentPage} de ${totalPages}`;
+                btnPrev.disabled = !data.hasPreviousPage;
+                btnNext.disabled = !data.hasNextPage;
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function goToPreviousPage() {
+            if (currentPage > 1) loadPendingBooks(currentPage - 1);
+        }
+
+        function goToNextPage() {
+            if (currentPage < totalPages) loadPendingBooks(currentPage + 1);
+        }
+
+        // Inicialização
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initApp = () => {
+                if (typeof AuthService === 'undefined') {
+                    setTimeout(initApp, 100);
+                    return;
+                }
+
+                if (!AuthService.isAuthenticated() || !AuthService.isAdmin()) {
+                    document.getElementById('forbiddenState').style.display = 'flex';
+                    return;
+                }
+
+                document.getElementById('adminShell').style.display = 'flex';
+                renderUserChip();
+                loadDashboard();
+                loadRecentPending();
+
+                document.getElementById('rejectModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'rejectModal') closeRejectModal();
+                });
+            };
+
+            initApp();
+        });
+    </script>
+</body>
+</html>

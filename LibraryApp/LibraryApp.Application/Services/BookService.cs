@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using LibraryApp.Application.Responses;
+using LibraryApp.Domain.Constants;
 using LibraryApp.Domain.Entities;
 using LibraryApp.Domain.Exceptions;
 using LibraryApp.Domain.Repositories;
@@ -22,6 +23,8 @@ namespace LibraryApp.Application.Services
 
         public Task<BooksPaginatedResponse> GetBooksPaginated(int page, int perPage); // Lista livros com paginação
 
+        public Task<MyBooksPaginatedResponse> GetMyBooks(int page, int perPage); // Lista, paginado, os livros enviados pelo estudante autenticado (com a situação de cada um)
+
         public Task DeleteBook(long bookId); // Remove livro do sistema
 
         public Task LikeBook(long bookId); // Usuário curte um livro
@@ -29,6 +32,14 @@ namespace LibraryApp.Application.Services
         public Task UnlikeBook(long bookId); // Usuário remove curtida de um livro
 
         public Task<bool> UserLikedBook(long bookId); // Verifica se usuário já curtiu o livro
+
+        public Task<AdminBooksPaginatedResponse> GetBooksPendingAnalysis(int page, int perPage); // Lista, paginado, os livros aguardando análise (uso do administrador)
+
+        public Task<BookResponse> ApproveBook(long bookId); // Administrador aprova e publica um livro em análise
+
+        public Task<BookResponse> RejectBook(long bookId, string reason); // Administrador reprova um livro em análise
+
+        public Task<(Stream Stream, string FileName)> DownloadBookForReview(long bookId); // Administrador baixa o arquivo original do livro para validar seu conteúdo
     }
 
     // Implementação do serviço de livros
@@ -129,9 +140,19 @@ namespace LibraryApp.Application.Services
         public async Task<BookResponse> GetBook(long id)
         {            
             var book = await _uow.BookRepository.GetFullBook(id) ?? // BUSCA: Obter livro com todos os relacionamentos
-                throw new NotFoundException("Livro não foi encontrado");            
+                throw new NotFoundException("Livro não foi encontrado");
 
             var user = await _tokenService.GetUserByToken(); // VISUALIZAÇÃO: Registrar view se usuário autenticado
+
+            // VISIBILIDADE: livros que ainda não foram publicados só podem ser vistos pelo autor ou por um administrador
+            if (book.Status != BookStatus.Published)
+            {
+                var isOwner = user is not null && book.UserId == user.Id;
+                var isAdmin = user is not null && _tokenService.CurrentUserIsInRole(Roles.Admin);
+
+                if (!isOwner && !isAdmin)
+                    throw new NotFoundException("Livro não foi encontrado");
+            }
 
             // Se usuário está logado E ainda não visualizou este livro
             if (user is not null && book.Views.Any(d => d.UserId == user.Id) == false)
@@ -228,9 +249,15 @@ namespace LibraryApp.Application.Services
                     throw new RequestException("Formato de arquivo deve ser pdf");
                 
                 await _storageService.UploadFile(file, book.FileName); // Sobrescreve arquivo existente no Dropbox
+
+                // Trocar o arquivo invalida a análise anterior: o conteúdo precisa ser revisado novamente antes de ficar público
+                book.Status = BookStatus.PendingAnalysis;
+                book.RejectionReason = null;
+                book.ReviewedByUserId = null;
+                book.ReviewedAt = null;
             }
 
-            // PERSISTÊNCIA: Atualizar campos do livro          
+            // PERSISTÊNCIA: Atualizar campos do livro
             _mapper.Map(request, book);
             _uow.GenericRepository.Update<Book>(book);
             await _uow.Commit();
@@ -311,8 +338,8 @@ namespace LibraryApp.Application.Services
 
         // Lista livros com paginação       
         public async Task<BooksPaginatedResponse> GetBooksPaginated(int page, int perPage)
-        {                       
-            var books = await _uow.BookRepository.GetBooksPaginated(page, perPage); // BUSCA: Obter página de livros
+        {
+            var books = await _uow.BookRepository.GetBooksPaginated(page, perPage, BookStatus.Published); // BUSCA: Obter página de livros já publicados
             var response = _mapper.Map<BooksPaginatedResponse>(books);// MAPEAMENTO: Converter para resposta paginada
             var booksResponse = books.Results.Select(async book =>  // Processar cada livro para obter URLs e informações adicionais
             {
@@ -335,7 +362,36 @@ namespace LibraryApp.Application.Services
             return response;
         }
 
-        // Verifica se o usuário logado curtiu um livro específico       
+        // Lista, paginado, os livros enviados pelo estudante autenticado, com a situação de cada um (pendente, publicado ou reprovado)
+        public async Task<MyBooksPaginatedResponse> GetMyBooks(int page, int perPage)
+        {
+            var user = await _tokenService.GetUserByToken()
+                ?? throw new UnauthorizedException("Usuario deve estar autenticado para acessar esse recurso");
+
+            var books = await _uow.BookRepository.GetBooksByUserPaginated(user.Id, page, perPage);
+
+            var response = _mapper.Map<MyBooksPaginatedResponse>(books);
+
+            var booksResponse = books.Results.Select(async book =>
+            {
+                var bookResponse = _mapper.Map<MyBookResponse>(book);
+
+                bookResponse.CoverUrl = string.IsNullOrEmpty(book.CoverName)
+                    ? ""
+                    : await _storageService.GetFileUrl(book.CoverName, book.Title);
+
+                bookResponse.ViewsCount = book.Views.Count;
+                bookResponse.LikesCount = book.Likes.Count;
+
+                return bookResponse;
+            });
+
+            response.Books = (await Task.WhenAll(booksResponse)).ToList();
+
+            return response;
+        }
+
+        // Verifica se o usuário logado curtiu um livro específico
         public async Task<bool> UserLikedBook(long bookId)
         {
             var user = await _tokenService.GetUserByToken();
@@ -343,6 +399,86 @@ namespace LibraryApp.Application.Services
             if (user is null) return false; // Se usuário não está logado, retorna false
 
             return await _uow.BookRepository.UserLikedBook(user.Id, bookId);
+        }
+
+        // Lista, paginada, os livros aguardando análise (fila de moderação do administrador)
+        public async Task<AdminBooksPaginatedResponse> GetBooksPendingAnalysis(int page, int perPage)
+        {
+            var books = await _uow.BookRepository.GetBooksPaginated(page, perPage, BookStatus.PendingAnalysis);
+
+            var response = _mapper.Map<AdminBooksPaginatedResponse>(books);
+
+            var booksResponse = books.Results.Select(async book =>
+            {
+                var bookResponse = _mapper.Map<BookResponse>(book);
+
+                bookResponse.CoverUrl = string.IsNullOrEmpty(book.CoverName)
+                    ? ""
+                    : await _storageService.GetFileUrl(book.CoverName, book.Title);
+                bookResponse.FileUrl = await _storageService.GetFileUrl(book.FileName, book.Title);
+                bookResponse.AuthorName = book.User.UserName;
+
+                return bookResponse;
+            });
+
+            response.Books = (await Task.WhenAll(booksResponse)).ToList();
+
+            return response;
+        }
+
+        // Administrador aprova um livro em análise, tornando-o público
+        public async Task<BookResponse> ApproveBook(long bookId)
+        {
+            var book = await _uow.GenericRepository.GetById<Book>(bookId)
+                ?? throw new NotFoundException("Livro não foi encontrado");
+
+            if (book.Status != BookStatus.PendingAnalysis)
+                throw new RequestException("Somente livros aguardando análise podem ser aprovados");
+
+            var admin = await _tokenService.GetUserByToken();
+
+            book.Status = BookStatus.Published;
+            book.RejectionReason = null;
+            book.ReviewedByUserId = admin!.Id;
+            book.ReviewedAt = DateTime.UtcNow;
+
+            _uow.GenericRepository.Update<Book>(book);
+            await _uow.Commit();
+
+            return _mapper.Map<BookResponse>(book);
+        }
+
+        // Administrador reprova um livro em análise, informando o motivo
+        public async Task<BookResponse> RejectBook(long bookId, string reason)
+        {
+            var book = await _uow.GenericRepository.GetById<Book>(bookId)
+                ?? throw new NotFoundException("Livro não foi encontrado");
+
+            if (book.Status != BookStatus.PendingAnalysis)
+                throw new RequestException("Somente livros aguardando análise podem ser reprovados");
+
+            var admin = await _tokenService.GetUserByToken();
+
+            book.Status = BookStatus.Rejected;
+            book.RejectionReason = reason;
+            book.ReviewedByUserId = admin!.Id;
+            book.ReviewedAt = DateTime.UtcNow;
+
+            _uow.GenericRepository.Update<Book>(book);
+            await _uow.Commit();
+
+            return _mapper.Map<BookResponse>(book);
+        }
+
+        // Administrador baixa o arquivo original enviado pelo estudante para validar seu conteúdo antes de publicar
+        public async Task<(Stream Stream, string FileName)> DownloadBookForReview(long bookId)
+        {
+            var book = await _uow.GenericRepository.GetById<Book>(bookId)
+                ?? throw new NotFoundException("Livro não foi encontrado");
+
+            var stream = await _storageService.DownloadFile(book.FileName);
+
+            return (stream, book.FileName);
         }
     }
 }

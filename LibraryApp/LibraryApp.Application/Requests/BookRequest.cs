@@ -31,4 +31,11 @@ namespace LibraryApp.Application.Requests
         public IFormFile? Cover { get; set; } // Nova imagem de capa (opcional) 
         public List<long>? CategoriesIds { get; set; } // Nova lista de categorias (opcional)
     }
+
+    // Classe de requisição para um administrador reprovar um livro em análise
+    public class RejectBookRequest
+    {
+        [Required, MaxLength(500, ErrorMessage = "Tamanho maximo do motivo é de 500")]
+        public string Reason { get; set; }
+    }
 }

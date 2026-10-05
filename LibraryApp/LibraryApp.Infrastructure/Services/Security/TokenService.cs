@@ -127,6 +127,27 @@ namespace LibraryApp.Infrastructure.Services.Security
         }
 
         /// <summary>
+        /// Obtém os papéis (roles) do usuário a partir das claims do token JWT validado.
+        /// </summary>
+        /// <returns>Lista com os nomes dos papéis presentes no token.</returns>
+        public List<string> GetUserRoles()
+        {
+            return GetTokenClaims()
+                .Where(d => d.Type == ClaimTypes.Role)
+                .Select(d => d.Value)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Verifica se o usuário autenticado na requisição atual possui o papel informado.
+        /// </summary>
+        /// <param name="role">Nome do papel a ser verificado.</param>
+        public bool CurrentUserIsInRole(string role)
+        {
+            return GetUserRoles().Contains(role, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Gera a chave de segurança simétrica utilizada na assinatura e validação dos tokens JWT.
         /// </summary>
         /// <returns><see cref="SymmetricSecurityKey"/> gerada a partir da chave secreta configurada.</returns>

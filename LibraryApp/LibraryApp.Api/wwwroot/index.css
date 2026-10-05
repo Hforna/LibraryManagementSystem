@@ -112,6 +112,27 @@ body {
         background: #c82333;
     }
 
+.btn-back {
+    background: linear-gradient(135deg, #4a54e1, #764ba2);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(74, 84, 225, 0.3);
+    text-decoration: none;
+    display: inline-block;
+}
+
+    .btn-back:hover {
+        background: linear-gradient(135deg, #3742c7, #5a3d7a);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(74, 84, 225, 0.4);
+    }
+
 .header h1 {
     color: #4a54e1;
     font-size: 2.5rem;

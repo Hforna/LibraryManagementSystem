@@ -33,6 +33,7 @@ namespace LibraryApp.Application
             services.AddScoped<ICommentService, CommentService>(); // Registra serviço de comentários (criar, deletar, listar comentários)
             services.AddScoped<ICategoryService, CategoryService>(); // Registra serviço de categorias (gerenciamento de categorias de livros)
             services.AddScoped<IFileService, FileService>(); // Registra serviço de arquivos (upload, download de arquivos)
+            services.AddScoped<IAdminService, AdminService>(); // Registra serviço do painel do administrador (dashboard, métricas)
         }
     }
 }

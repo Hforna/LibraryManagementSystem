@@ -19,6 +19,7 @@ namespace LibraryApp.Api.Middlewares
                 {
                     RequestException => HttpStatusCode.BadRequest,
                     UnauthorizedException => HttpStatusCode.Unauthorized,
+                    ForbiddenException => HttpStatusCode.Forbidden,
                     NotFoundException => HttpStatusCode.NotFound,
                     UnexpectedErrorException => HttpStatusCode.InternalServerError,
                     _ => HttpStatusCode.InternalServerError

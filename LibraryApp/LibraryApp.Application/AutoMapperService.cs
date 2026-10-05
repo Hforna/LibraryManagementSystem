@@ -31,7 +31,13 @@ namespace LibraryApp.Application
 
             CreateMap<Pagination<Book>, BooksPaginatedResponse>(); // Converte resultado paginado de livros
 
+            CreateMap<Pagination<Book>, AdminBooksPaginatedResponse>(); // Converte resultado paginado de livros para o painel do administrador
+
             CreateMap<Book, BookShortResponse>(); // Converte entidade Book em resposta resumida
+
+            CreateMap<Book, MyBookResponse>(); // Converte entidade Book em resposta resumida com situação da análise
+
+            CreateMap<Pagination<Book>, MyBooksPaginatedResponse>(); // Converte resultado paginado de livros do estudante autenticado
 
             CreateMap<Category, CategoryResponse>(); // Converte entidade Category em resposta
         }

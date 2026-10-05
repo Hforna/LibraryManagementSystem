@@ -1,5 +1,6 @@
 ﻿using LibraryApp.Application.Requests;
 using LibraryApp.Application.Responses;
+using LibraryApp.Domain.Constants;
 using LibraryApp.Domain.Entities;
 using LibraryApp.Domain.Exceptions;
 using LibraryApp.Domain.Repositories;
@@ -63,8 +64,11 @@ namespace LibraryApp.Application.Services
             // Se a senha estiver incorreta, lança exceção genérica
             if (!isHashValid)
                 throw new RequestException("Usuário ou senha inválidos");
-    
-            var accessToken = _tokenService.GenerateAccessToken(new List<Claim>(), user.Id); // Gera um novo Access Token (JWT) para o usuário
+
+            var roles = await _userManager.GetRolesAsync(user); // Obtém os papéis (Student, Admin) do usuário
+            var claims = roles.Select(role => new Claim(ClaimTypes.Role, role)).ToList(); // Inclui os papéis como claims no token
+
+            var accessToken = _tokenService.GenerateAccessToken(claims, user.Id); // Gera um novo Access Token (JWT) para o usuário
             user.RefreshToken = _tokenService.GenerateRefreshToken(); // Gera um novo Refresh Token (usado para renovar o Access Token)
             user.RefreshTokenExpiration = _tokenService.GetTimeToRefreshExpires(); // Define quando o Refresh Token vai expirar
 
@@ -85,24 +89,18 @@ namespace LibraryApp.Application.Services
         {
             var user = await _uow.UserRepository.GetUserByEmailAsync(email); // Busca se já existe um usuário com este email
 
-            // Se o usuário não existe, cria um novo
+            // Não existe auto-cadastro: o login pelo Google só é permitido para contas já criadas por um administrador
             if (user is null)
-            {                
-                user = new User() // Cria novo usuário com dados do Google
-                {
-                    UserName = userName,
-                    Email = email,
-                    EmailConfirmed = true,
-                    NormalizedEmail = email.ToUpper(),
-                    PasswordHash = "-"
-                };
-
-                await _uow.GenericRepository.Add<User>(user); // Adiciona o novo usuário ao banco
-                await _uow.Commit();
+            {
+                _logger.LogWarning($"Google login attempt for unregistered e-mail: {email}");
+                throw new UnauthorizedException("Conta não encontrada. Solicite ao administrador a criação do seu acesso");
             }
 
+            var roles = await _userManager.GetRolesAsync(user); // Obtém os papéis (Student, Admin) do usuário
+            var claims = roles.Select(role => new Claim(ClaimTypes.Role, role)).ToList(); // Inclui os papéis como claims no token
+
             // Gera tokens para o usuário (novo ou existente)
-            var accessToken = _tokenService.GenerateAccessToken(new List<Claim>(), user.Id); 
+            var accessToken = _tokenService.GenerateAccessToken(claims, user.Id);
             user.RefreshToken = _tokenService.GenerateRefreshToken();
             user.RefreshTokenExpiration = _tokenService.GetTimeToRefreshExpires();
 

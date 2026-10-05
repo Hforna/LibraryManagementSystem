@@ -79,34 +79,53 @@
                 <button type="submit" class="btn-primary" id="loginBtn">Entrar</button>
             </form>
             <div class="modal-link">
-                Não tem conta? <a href="#" onclick="showRegisterModal()">Cadastre-se</a>
+                <a href="#" onclick="showForgotPasswordModal(); return false;">Esqueceu a senha?</a>
+            </div>
+            <div class="modal-link">
+                Não tem conta? Peça ao administrador para criar seu acesso.
             </div>
         </div>
     </div>
 
-    <!-- Modal de registro -->
-    <div id="registerModal" class="modal">
+    <!-- Modal de esqueci a senha -->
+    <div id="forgotPasswordModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeRegisterModal()">✕</button>
-            <h2>Criar Conta</h2>
-            <form onsubmit="register(event)">
-                <div class="form-group">
-                    <label>Username/Nick</label>
-                    <input type="text" id="registerUsername" required minlength="3">
-                </div>
+            <button class="modal-close" onclick="closeForgotPasswordModal()">✕</button>
+            <h2>Recuperar Senha</h2>
+            <p style="color:#666; margin-bottom:20px;">Informe o e-mail da sua conta. Enviaremos um link para você criar uma nova senha.</p>
+            <form onsubmit="forgotPassword(event)">
                 <div class="form-group">
                     <label>E-mail</label>
-                    <input type="email" id="registerEmail" required>
+                    <input type="email" id="forgotEmail" required>
                 </div>
-                <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="registerPassword" required minlength="6">
-                </div>
-                <button type="submit" class="btn-primary" id="registerBtn">Criar Conta</button>
+                <button type="submit" class="btn-primary" id="forgotBtn">Enviar Link</button>
             </form>
             <div class="modal-link">
-                Já tem conta? <a href="#" onclick="showLoginModal()">Entrar</a>
+                <a href="#" onclick="showLoginModal(); return false;">← Voltar ao login</a>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de alterar senha -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeChangePasswordModal()">✕</button>
+            <h2>Alterar Senha</h2>
+            <form onsubmit="changePassword(event)">
+                <div class="form-group">
+                    <label>Senha atual</label>
+                    <input type="password" id="currentPassword" required autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label>Nova senha</label>
+                    <input type="password" id="newPassword" required minlength="8" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirmar nova senha</label>
+                    <input type="password" id="confirmNewPassword" required minlength="8" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn-primary" id="changePasswordBtn">Alterar Senha</button>
+            </form>
         </div>
     </div>
 
@@ -175,8 +194,15 @@
             const user = AuthService.getCurrentUser();
 
             if (user) {
+                const adminLink = AuthService.isAdmin()
+                    ? `<a href="admin.html" class="btn-back">Painel Admin</a>`
+                    : '';
+
                 userSection.innerHTML = `
+                        <a href="my-books.html" class="btn-back">Meus Livros</a>
+                        ${adminLink}
                         <button class="btn-upload" onclick="showUploadModal()">Enviar</button>
+                        <button class="btn-back" onclick="showChangePasswordModal()">Senha</button>
                         <button class="btn-logout" onclick="logout()">Sair</button>
                     `;
             } else {
@@ -188,21 +214,86 @@
 
         function showLoginModal() {
             document.getElementById('loginModal').classList.add('show');
-            closeRegisterModal();
+            closeForgotPasswordModal();
             closeUploadModal();
+        }
+
+        // Senha
+
+        function showForgotPasswordModal() {
+            document.getElementById('forgotEmail').value = document.getElementById('loginEmail').value.includes('@')
+                ? document.getElementById('loginEmail').value
+                : '';
+            document.getElementById('forgotPasswordModal').classList.add('show');
+            closeLoginModal();
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.remove('show');
+        }
+
+        async function forgotPassword(event) {
+            event.preventDefault();
+            const btn = document.getElementById('forgotBtn');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+
+            const email = document.getElementById('forgotEmail').value.trim();
+            const result = await AuthService.forgotPassword(email);
+
+            if (result.success) {
+                showNotification('Se este e-mail estiver cadastrado, você receberá um link para criar uma nova senha.', 'success');
+                event.target.reset();
+                closeForgotPasswordModal();
+            } else {
+                showNotification(result.error || 'Erro ao enviar o link', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Enviar Link';
+        }
+
+        function showChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.add('show');
+            closeUploadModal();
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.remove('show');
+        }
+
+        async function changePassword(event) {
+            event.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                showNotification('As novas senhas não coincidem.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('changePasswordBtn');
+            btn.disabled = true;
+            btn.textContent = 'Alterando...';
+
+            const result = await AuthService.changePassword(currentPassword, newPassword);
+
+            if (result.success) {
+                showNotification('Senha alterada com sucesso!', 'success');
+                event.target.reset();
+                closeChangePasswordModal();
+            } else {
+                showNotification(result.error || 'Erro ao alterar a senha', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Alterar Senha';
         }
 
         function closeLoginModal() {
             document.getElementById('loginModal').classList.remove('show');
-        }
-
-        function showRegisterModal() {
-            document.getElementById('registerModal').classList.add('show');
-            closeLoginModal();
-        }
-
-        function closeRegisterModal() {
-            document.getElementById('registerModal').classList.remove('show');
         }
 
         async function login(event) {
@@ -227,30 +318,6 @@
 
             btn.disabled = false;
             btn.textContent = 'Entrar';
-        }
-
-        async function register(event) {
-            event.preventDefault();
-            const btn = document.getElementById('registerBtn');
-            btn.disabled = true;
-            btn.textContent = 'Criando...';
-
-            const userName = document.getElementById('registerUsername').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-
-            const result = await AuthService.register(userName, email, password);
-
-            if (result.success) {
-                showNotification(result.message || 'Conta criada! Verifique seu e-mail.', 'success');
-                closeRegisterModal();
-                setTimeout(() => showLoginModal(), 2000);
-            } else {
-                showNotification(result.error || 'Erro ao criar conta', 'error');
-            }
-
-            btn.disabled = false;
-            btn.textContent = 'Criar Conta';
         }
 
         function logout() {
@@ -554,7 +621,7 @@
             const result = await BookService.createBook(title, description, file, cover, categoriesIds);
 
             if (result.success) {
-                showNotification('Livro enviado com sucesso!', 'success');
+                showNotification('Livro enviado com sucesso! Ele ficará em análise até ser aprovado por um administrador.', 'success');
                 closeUploadModal();
                 event.target.reset();
                 selectedCategories = [];
