@@ -203,3 +203,6 @@ FakesAssemblies/
 /.sonarqube
 coverage.opencover.xml
 /IssuesToSolve.txt
+
+# Rider-generated Docker override (machine-specific paths)
+docker-compose.generated.override.yml
